@@ -1,7 +1,7 @@
 using System.ComponentModel;
 using ModelContextProtocol.Server;
 
-namespace McpServer.Tools;
+namespace InterReactMCP.Tools;
 
 [McpServerToolType]
 public class AccountTools
