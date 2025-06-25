@@ -4,6 +4,14 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InterReactMCP", "InterReact
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InterReact", "InterReact\InterReact.csproj", "{B7C59DDD-933C-46C1-8B54-CAC8419FB27C}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "InterReact.Tests", "InterReact.Tests", "{FDB9F08E-F287-49BB-AFC8-6B24045F98DD}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConnectTests", "InterReact.Tests\ConnectTests\ConnectTests.csproj", "{3C127147-BE60-4112-B3E2-684CEEEDB599}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SystemTests", "InterReact.Tests\SystemTests\SystemTests.csproj", "{E5E840BB-1F49-4683-AC9F-2025D1EA08CE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitTests", "InterReact.Tests\UnitTests\UnitTests.csproj", "{D70EBBE9-DEEE-4006-AEAE-6C3941393B4D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -18,5 +26,22 @@ Global
 		{B7C59DDD-933C-46C1-8B54-CAC8419FB27C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B7C59DDD-933C-46C1-8B54-CAC8419FB27C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B7C59DDD-933C-46C1-8B54-CAC8419FB27C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3C127147-BE60-4112-B3E2-684CEEEDB599}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3C127147-BE60-4112-B3E2-684CEEEDB599}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3C127147-BE60-4112-B3E2-684CEEEDB599}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3C127147-BE60-4112-B3E2-684CEEEDB599}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E5E840BB-1F49-4683-AC9F-2025D1EA08CE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E5E840BB-1F49-4683-AC9F-2025D1EA08CE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E5E840BB-1F49-4683-AC9F-2025D1EA08CE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E5E840BB-1F49-4683-AC9F-2025D1EA08CE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D70EBBE9-DEEE-4006-AEAE-6C3941393B4D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D70EBBE9-DEEE-4006-AEAE-6C3941393B4D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D70EBBE9-DEEE-4006-AEAE-6C3941393B4D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D70EBBE9-DEEE-4006-AEAE-6C3941393B4D}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{3C127147-BE60-4112-B3E2-684CEEEDB599} = {FDB9F08E-F287-49BB-AFC8-6B24045F98DD}
+		{E5E840BB-1F49-4683-AC9F-2025D1EA08CE} = {FDB9F08E-F287-49BB-AFC8-6B24045F98DD}
+		{D70EBBE9-DEEE-4006-AEAE-6C3941393B4D} = {FDB9F08E-F287-49BB-AFC8-6B24045F98DD}
 	EndGlobalSection
 EndGlobal
