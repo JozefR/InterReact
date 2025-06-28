@@ -1,7 +1,13 @@
-﻿using Stringification;
-using System.Reactive.Linq;
+﻿using System.Reactive.Linq;
+using InterReact.Consts;
+using InterReact.Enums;
+using InterReact.Extensions;
+using InterReact.Messages.Contract;
+using InterReact.Messages.Order;
+using InterReact.Services;
+using Stringification;
 
-namespace Orders;
+namespace SystemTests.Orders;
 
 public class Monitor(ITestOutputHelper output, TestFixture fixture) : CollectionTestBase(output, fixture, true)
 {

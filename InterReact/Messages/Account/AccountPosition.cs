@@ -1,9 +1,11 @@
-﻿namespace InterReact;
+﻿using InterReact.Core;
+
+namespace InterReact.Messages.Account;
 
 public sealed class AccountPosition
 {
     public string Account { get; }
-    public Contract Contract { get; }
+    public Contract.Contract Contract { get; }
     public decimal Position { get; }
     public double AverageCost { get; }
     internal AccountPosition(ResponseReader r)

@@ -1,10 +1,13 @@
-﻿namespace InterReact;
+﻿using InterReact.Core;
+using InterReact.Interfaces;
+
+namespace InterReact.Messages.Order;
 
 public sealed class OpenOrder : IHasOrderId
 {
     public int OrderId { get; }
     public Order Order { get; } = new();
-    public Contract Contract { get; } = new();
+    public Contract.Contract Contract { get; } = new();
     public OrderState OrderState { get; } = new();
 
     internal OpenOrder(ResponseReader reader)

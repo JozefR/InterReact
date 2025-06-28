@@ -1,8 +1,9 @@
 ﻿using System.Globalization;
+using InterReact.Enums;
 
-namespace InterReact;
+namespace InterReact.Messages.MarketData.ITick;
 
-public sealed class TimeTick : ITick // from StringTick
+public sealed class TimeTick : Interfaces.ITick // from StringTick
 {
     public int RequestId { get; }
     public TickType TickType { get; }

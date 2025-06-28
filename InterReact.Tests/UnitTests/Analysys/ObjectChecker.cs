@@ -1,5 +1,7 @@
 ﻿using System.Reflection;
-namespace Analysis;
+using InterReact.Services;
+
+namespace UnitTests.Analysys;
 
 public class Interface_Checker(ITestOutputHelper output) : UnitTestBase(output)
 {

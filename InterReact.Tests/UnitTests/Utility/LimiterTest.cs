@@ -1,6 +1,8 @@
-﻿using Microsoft.Extensions.Logging;
-using System.Diagnostics;
-namespace Utility;
+﻿using System.Diagnostics;
+using InterReact.Utility;
+using Microsoft.Extensions.Logging;
+
+namespace UnitTests.Utility;
 
 public sealed class Limiter(ITestOutputHelper output) : UnitTestBase(output)
 {

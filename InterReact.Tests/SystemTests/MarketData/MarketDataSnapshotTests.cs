@@ -1,8 +1,11 @@
-﻿using Stringification;
-using System;
-using System.Reactive.Linq;
+﻿using System.Reactive.Linq;
+using InterReact.Consts;
+using InterReact.Interfaces;
+using InterReact.Messages;
+using InterReact.Messages.Contract;
+using Stringification;
 
-namespace MarketData;
+namespace SystemTests.MarketData;
 
 public class MarketDataSnapshot(ITestOutputHelper output, TestFixture fixture) : CollectionTestBase(output, fixture)
 {

@@ -1,4 +1,4 @@
-﻿namespace InterReact;
+﻿namespace InterReact.Interfaces;
 
 public interface IHasExecutionId
 {

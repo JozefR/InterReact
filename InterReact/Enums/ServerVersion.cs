@@ -1,6 +1,6 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 
-namespace InterReact;
+namespace InterReact.Enums;
 
 [SuppressMessage("Design", "CA1707")]
 public enum ServerVersion

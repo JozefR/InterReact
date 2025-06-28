@@ -1,4 +1,6 @@
-﻿namespace InterReact;
+﻿using InterReact.Messages.other;
+
+namespace InterReact.Services;
 
 public partial class Service
 {

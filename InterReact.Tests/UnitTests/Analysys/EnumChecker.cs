@@ -1,5 +1,6 @@
 ﻿using System.Reflection;
-namespace Analysis;
+
+namespace UnitTests.Analysys;
 
 public class Enum_Checker(ITestOutputHelper output) : UnitTestBase(output)
 {

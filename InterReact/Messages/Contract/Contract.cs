@@ -1,4 +1,7 @@
-﻿namespace InterReact;
+﻿using InterReact.Consts;
+using InterReact.Core;
+
+namespace InterReact.Messages.Contract;
 
 public sealed class Contract // input + output OK
 {

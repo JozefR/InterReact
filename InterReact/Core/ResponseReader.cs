@@ -1,8 +1,12 @@
-﻿using Stringification;
-using System.IO;
+﻿using System.IO;
 using System.Reflection;
 using System.Runtime.CompilerServices;
-namespace InterReact;
+using InterReact.Enums;
+using InterReact.Extensions;
+using InterReact.Messages;
+using Stringification;
+
+namespace InterReact.Core;
 
 public sealed class ResponseReader(
     ILogger<ResponseReader> logger, InterReactOptions options, ResponseParser parser)
@@ -53,7 +57,7 @@ public sealed class ResponseReader(
         if (Logger.IsEnabled(LogLevel.Debug))
         {
             CallerInfo = GetCallerInfo(member, file, l); // slow!
-            Logger.LogResponseString(CallerInfo, input, output?.ToString() ?? "", typeof(T).Name);
+            Extensions.Extension.LogResponseString(Logger, CallerInfo, input, output?.ToString() ?? "", typeof(T).Name);
         }
 
         return output;

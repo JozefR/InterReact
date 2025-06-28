@@ -1,4 +1,7 @@
-﻿namespace InterReact;
+﻿using InterReact.Core;
+using InterReact.Enums;
+
+namespace InterReact.Messages.other;
 
 public sealed class FinancialAdvisor
 {

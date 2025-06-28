@@ -1,6 +1,8 @@
-﻿using Stringification;
-using System.Reactive.Linq;
-namespace Account;
+﻿using System.Reactive.Linq;
+using InterReact.Messages.Account;
+using Stringification;
+
+namespace SystemTests.Account;
 
 public class AccountPosition(ITestOutputHelper output, TestFixture fixture) : CollectionTestBase(output, fixture)
 {

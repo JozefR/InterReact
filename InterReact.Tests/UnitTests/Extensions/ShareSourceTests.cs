@@ -1,9 +1,11 @@
-﻿using Microsoft.Reactive.Testing;
-using Stringification;
-using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics.CodeAnalysis;
 using System.Reactive;
 using System.Reactive.Linq;
-namespace Extension;
+using InterReact.Extensions;
+using Microsoft.Reactive.Testing;
+using Stringification;
+
+namespace UnitTests.Extensions;
 
 [SuppressMessage("Usage", "IDE0305:CollectiionExpression")]
 public sealed class ShareSourceTests(ITestOutputHelper output) : ReactiveUnitTestBase(output)

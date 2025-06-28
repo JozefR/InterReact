@@ -1,6 +1,7 @@
-﻿using Stringification;
-using System.Reactive.Linq;
-namespace ManagedAccounts;
+﻿using System.Reactive.Linq;
+using Stringification;
+
+namespace SystemTests.Other;
 
 public class ManagedAccounts(ITestOutputHelper output, TestFixture fixture) : CollectionTestBase(output, fixture)
 {

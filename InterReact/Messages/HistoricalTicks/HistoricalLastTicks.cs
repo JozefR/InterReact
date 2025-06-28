@@ -1,4 +1,8 @@
-﻿namespace InterReact;
+﻿using InterReact.Core;
+using InterReact.Interfaces;
+using InterReact.Messages.MarketData.TickByTick;
+
+namespace InterReact.Messages.HistoricalTicks;
 
 public sealed class HistoricalLastTicks : IHasRequestId
 {

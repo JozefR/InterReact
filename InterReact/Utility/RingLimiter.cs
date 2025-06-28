@@ -1,6 +1,7 @@
-﻿using Microsoft.Extensions.Logging.Abstractions;
-using System.Diagnostics;
-namespace InterReact;
+﻿using System.Diagnostics;
+using Microsoft.Extensions.Logging.Abstractions;
+
+namespace InterReact.Utility;
 
 public sealed class RingLimiter
 {

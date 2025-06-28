@@ -1,4 +1,7 @@
-﻿namespace InterReact;
+﻿using InterReact.Core;
+using InterReact.Interfaces;
+
+namespace InterReact.Messages.other;
 
 //https://ibkrcampus.com/campus/ibkr-api-page/twsapi-doc/#hist-step-size
 

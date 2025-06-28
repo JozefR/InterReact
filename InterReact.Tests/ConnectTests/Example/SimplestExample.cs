@@ -1,9 +1,14 @@
 ﻿using System.Reactive.Linq;
+using InterReact.Consts;
+using InterReact.Enums;
+using InterReact.Extensions;
+using InterReact.Messages.Contract;
+
 /*
 * Be sure that Trader Workstation (TWS) is running on your machine and that the following is set:
 * File / GlobalConfiguration / API / Settings/ "Enable ActiveX and Socket Clients".
 */
-namespace Example;
+namespace ConnectTests.Example;
 
 public class SimplestExample
 {

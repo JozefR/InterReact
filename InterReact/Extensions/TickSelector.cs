@@ -1,4 +1,8 @@
-﻿namespace InterReact;
+﻿using InterReact.Interfaces;
+using InterReact.Messages;
+using InterReact.Messages.MarketData.ITick;
+
+namespace InterReact.Extensions;
 
 // This extension method provides an alternative to source.OfType<T>, with intellisense support.
 // So that, for example, source.OfType<PriceTick>() can be replaced with OfTickClass(selector => selector.PriceTick).

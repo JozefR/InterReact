@@ -1,4 +1,8 @@
-﻿namespace InterReact;
+﻿using InterReact.Core;
+using InterReact.Enums;
+using InterReact.Interfaces;
+
+namespace InterReact.Messages.MarketData.TickByTick;
 
 internal static class TickByTick
 {

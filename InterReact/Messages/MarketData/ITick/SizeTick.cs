@@ -1,9 +1,12 @@
-﻿namespace InterReact;
+﻿using InterReact.Core;
+using InterReact.Enums;
+
+namespace InterReact.Messages.MarketData.ITick;
 
 /// <summary>
 /// Size only. For example, a trade/bid/ask at the previous trade/bid/ask price.
 /// </summary>
-public sealed class SizeTick : ITick
+public sealed class SizeTick : Interfaces.ITick
 {
     public int RequestId { get; }
     public TickType TickType { get; }

@@ -1,6 +1,6 @@
 ﻿using System.Net;
 
-namespace Connection;
+namespace ConnectTests.Connection;
 
 public class IpAddressTest(ITestOutputHelper output) : ConnectTestBase(output)
 {

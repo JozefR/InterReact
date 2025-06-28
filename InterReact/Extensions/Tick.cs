@@ -1,4 +1,6 @@
-﻿namespace InterReact;
+﻿using InterReact.Enums;
+
+namespace InterReact.Extensions;
 
 public static partial class Extension
 {

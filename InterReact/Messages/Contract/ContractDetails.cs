@@ -1,6 +1,11 @@
 ﻿using System.IO;
 using System.Text.RegularExpressions;
-namespace InterReact;
+using InterReact.Core;
+using InterReact.Enums;
+using InterReact.Interfaces;
+using InterReact.Messages.other;
+
+namespace InterReact.Messages.Contract;
 
 public sealed class ContractDetails : IHasRequestId
 {

@@ -1,5 +1,8 @@
 ﻿using System.Diagnostics.CodeAnalysis;
-namespace InterReact;
+using InterReact.Core;
+using InterReact.Enums;
+
+namespace InterReact.Messages.Conditions;
 
 [SuppressMessage("Usage", "IDE0079", Scope = "member")]
 [SuppressMessage("Usage", "IDE0290", Scope = "member")]

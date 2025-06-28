@@ -1,4 +1,6 @@
-﻿namespace InterReact;
+﻿using InterReact.Enums;
+
+namespace InterReact.Interfaces;
 
 public interface ITick : IHasRequestId
 {

@@ -1,10 +1,13 @@
-﻿namespace InterReact;
+﻿using InterReact.Core;
+using InterReact.Enums;
+
+namespace InterReact.Messages.MarketData.ITick;
 
 /// <summary>
 /// Missing Values are indicated with null.
 /// IB's Java client indicates missing Values using DOUBLE_MAX.
 /// </summary>
-public sealed class OptionComputationTick : ITick
+public sealed class OptionComputationTick : Interfaces.ITick
 {
     public int RequestId { get; }
     public TickType TickType { get; }

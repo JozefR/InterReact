@@ -1,6 +1,6 @@
 ﻿using System.Net;
 
-namespace InterReact;
+namespace InterReact.Consts;
 
 public static class IBDefaultPort
 {
@@ -11,7 +11,7 @@ public static class IBDefaultPort
     public static readonly int GatewayDemoAccount = 4002;
 }
 
-public static partial class Extension
+public static partial class PortExtension
 {
     internal static int[] IBDefaultPorts = [IBDefaultPort.TwsRegularAccount, IBDefaultPort.TwsDemoAccount, IBDefaultPort.GatewayRegularAccount, IBDefaultPort.GatewayDemoAccount];
 

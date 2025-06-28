@@ -1,7 +1,8 @@
-﻿using NodaTime;
+﻿using System.Reactive.Linq;
+using NodaTime;
 using Stringification;
-using System.Reactive.Linq;
-namespace CurrentTime;
+
+namespace SystemTests.Other;
 
 public class CurrentTimes(ITestOutputHelper output, TestFixture fixture) : CollectionTestBase(output, fixture)
 {

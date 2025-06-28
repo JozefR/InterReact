@@ -1,4 +1,8 @@
-﻿namespace InterReact;
+﻿using InterReact.Core;
+using InterReact.Enums;
+using InterReact.Interfaces;
+
+namespace InterReact.Messages.Order;
 
 public sealed class Execution : IHasRequestId, IHasOrderId, IHasExecutionId
 {
@@ -77,7 +81,7 @@ public sealed class Execution : IHasRequestId, IHasOrderId, IHasExecutionId
 
     public Liquidity LastLiquidity { get; } = Liquidity.None;
 
-    public Contract Contract { get; }
+    public Contract.Contract Contract { get; }
 
     internal Execution(ResponseReader r)
     {

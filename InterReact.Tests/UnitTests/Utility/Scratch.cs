@@ -1,10 +1,9 @@
-﻿using System;
-using System.Diagnostics;
-using System.Reactive.Disposables;
+﻿using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Reactive.Threading.Tasks;
-using System.Threading;
-namespace Utility;
+using InterReact.Extensions;
+
+namespace UnitTests.Utility;
 
 public sealed class ObservableTests(ITestOutputHelper output) : UnitTestBase(output)
 {

@@ -1,8 +1,13 @@
-﻿using Microsoft.Extensions.Logging;
-using System.Reactive.Linq;
+﻿using System.Reactive.Linq;
 using System.Reactive.Threading.Tasks;
+using InterReact.Consts;
+using InterReact.Extensions;
+using InterReact.Interfaces;
+using InterReact.Messages;
+using InterReact.Messages.Contract;
+using Microsoft.Extensions.Logging;
 
-namespace Other;
+namespace ConnectTests.Errors;
 
 public class BadData(ITestOutputHelper output) : ConnectTestBase(output, LogLevel.Debug)
 {

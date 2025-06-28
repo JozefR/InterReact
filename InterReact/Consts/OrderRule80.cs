@@ -1,4 +1,4 @@
-namespace InterReact;
+namespace InterReact.Consts;
 
 /// <summary>
 /// Used for Rule 80A. Describes the type of trader.

@@ -1,6 +1,6 @@
 ﻿using System.Net;
 
-namespace Arguments;
+namespace ConnectTests.Arguments;
 
 public class AllArgs(ITestOutputHelper output) : ConnectTestBase(output)
 {

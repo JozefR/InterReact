@@ -1,4 +1,10 @@
-﻿namespace InterReact;
+﻿using InterReact.Consts;
+using InterReact.Enums;
+using InterReact.Interfaces;
+using InterReact.Messages.Conditions;
+using InterReact.Messages.other;
+
+namespace InterReact.Messages.Order;
 
 // some of these properties require public setter to allow changing orders.
 public sealed class Order : IHasOrderId  // input + output

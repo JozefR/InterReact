@@ -1,4 +1,4 @@
-﻿namespace InterReact;
+﻿namespace InterReact.Messages;
 
 //https://ibkrcampus.com/campus/ibkr-api-page/twsapi-doc/#api-error-codes
 

@@ -1,7 +1,8 @@
 ﻿using System.Reactive.Disposables;
 using System.Reactive.Linq;
-using System.Reactive.Threading.Tasks;
-namespace Extension;
+using InterReact.Extensions;
+
+namespace UnitTests.Extensions;
 
 public sealed class ExtensionsTest(ITestOutputHelper output) : UnitTestBase(output)
 {

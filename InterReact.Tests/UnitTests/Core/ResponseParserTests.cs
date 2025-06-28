@@ -1,5 +1,7 @@
-﻿using Microsoft.Extensions.Logging.Abstractions;
-namespace Core;
+﻿using InterReact.Core;
+using Microsoft.Extensions.Logging.Abstractions;
+
+namespace UnitTests.Core;
 
 public class ResponseParserTests(ITestOutputHelper output) : UnitTestBase(output)
 {

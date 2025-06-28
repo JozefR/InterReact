@@ -1,7 +1,10 @@
-﻿using Stringification;
-using System.Reactive.Linq;
+﻿using InterReact.Consts;
+using InterReact.Extensions;
+using InterReact.Messages.Contract;
+using InterReact.Messages.Order;
+using Stringification;
 
-namespace Orders;
+namespace SystemTests.Orders;
 
 public class Place(ITestOutputHelper output, TestFixture fixture) : CollectionTestBase(output, fixture, true)
 {

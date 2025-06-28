@@ -1,8 +1,9 @@
-﻿using RxSockets;
-using Stringification;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Reactive.Concurrency;
-namespace InterReact;
+using RxSockets;
+using Stringification;
+
+namespace InterReact.Core;
 
 public sealed class Response : IObservable<object>
 {
@@ -18,7 +19,7 @@ public sealed class Response : IObservable<object>
             .ToArraysFromBytesWithLengthPrefix()
             .ToStringArrays()
             .ComposeMessage(composer)
-            .Do(msg => logger.LogResponseMessage(stringifier.Stringify(msg)))
+            .Do(msg => Extensions.Extension.LogResponseMessage(logger, stringifier.Stringify(msg)))
             .Publish()
             .AutoConnect(); // connect on first observer
     }

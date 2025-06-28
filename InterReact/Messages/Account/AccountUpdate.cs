@@ -1,4 +1,6 @@
-﻿namespace InterReact;
+﻿using InterReact.Core;
+
+namespace InterReact.Messages.Account;
 
 public sealed class AccountValue
 {
@@ -19,7 +21,7 @@ public sealed class AccountValue
 public sealed class PortfolioValue
 {
     public string Account { get; }
-    public Contract Contract { get; }
+    public Contract.Contract Contract { get; }
     public decimal Position { get; }
     public double MarketPrice { get; }
     public double MarketValue { get; }

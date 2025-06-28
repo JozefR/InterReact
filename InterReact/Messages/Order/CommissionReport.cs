@@ -1,4 +1,7 @@
-﻿namespace InterReact;
+﻿using InterReact.Core;
+using InterReact.Interfaces;
+
+namespace InterReact.Messages.Order;
 
 /// <summary>
 /// Sent after trades and also after calling RequestExecutions().

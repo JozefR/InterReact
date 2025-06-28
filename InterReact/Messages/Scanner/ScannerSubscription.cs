@@ -1,4 +1,6 @@
-﻿namespace InterReact;
+﻿using InterReact.Consts;
+
+namespace InterReact.Messages.Scanner;
 
 public sealed class ScannerSubscription // input
 {

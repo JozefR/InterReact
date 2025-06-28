@@ -1,6 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 
-namespace InterReact;
+namespace InterReact.Enums;
 
 [SuppressMessage("Usage", "CA1707", Scope = "member")]
 public enum TickType

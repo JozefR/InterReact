@@ -1,4 +1,6 @@
-﻿namespace InterReact;
+﻿using InterReact.Core;
+
+namespace InterReact.Messages.MarketDepth;
 
 public sealed class MarketDepthExchanges
 {

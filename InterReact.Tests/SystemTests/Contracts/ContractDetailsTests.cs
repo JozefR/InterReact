@@ -1,6 +1,11 @@
-﻿using Stringification;
-using System.Reactive.Linq;
-namespace Contracts;
+﻿using System.Reactive.Linq;
+using InterReact.Consts;
+using InterReact.Extensions;
+using InterReact.Messages;
+using InterReact.Messages.Contract;
+using Stringification;
+
+namespace SystemTests.Contracts;
 
 public class ContractDetail(ITestOutputHelper output, TestFixture fixture) : CollectionTestBase(output, fixture)
 {

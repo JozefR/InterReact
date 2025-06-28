@@ -1,4 +1,8 @@
-﻿namespace InterReact;
+﻿using InterReact.Core;
+using InterReact.Enums;
+using InterReact.Utility;
+
+namespace InterReact.Messages.MarketData.ITick;
 
 // There are many tick types, as identified by the enum TickType. For example: TickType.BidSize.
 // Each tick type maps to one of the classes below. For example, TickType.BidSize is represented by objects of class type TickSize.
@@ -7,7 +11,7 @@
 /// <summary>
 /// A trade/bid/ask at a price which is different from the previous trade/bid/ask price.
 /// </summary>
-public sealed class PriceTick : ITick
+public sealed class PriceTick : Interfaces.ITick
 {
     public int RequestId { get; }
     public TickType TickType { get; }

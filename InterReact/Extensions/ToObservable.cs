@@ -1,6 +1,9 @@
 ﻿using System.Reactive;
 using System.Reactive.Disposables;
-namespace InterReact;
+using InterReact.Interfaces;
+using InterReact.Messages;
+
+namespace InterReact.Extensions;
 
 public static partial class Extension
 {

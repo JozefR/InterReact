@@ -1,6 +1,9 @@
-﻿namespace InterReact;
+﻿using InterReact.Core;
+using InterReact.Enums;
 
-public sealed class ExchangeForPhysicalTick : ITick
+namespace InterReact.Messages.MarketData.ITick;
+
+public sealed class ExchangeForPhysicalTick : Interfaces.ITick
 {
     public int RequestId { get; }
     public TickType TickType { get; }

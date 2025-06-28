@@ -1,7 +1,9 @@
-﻿using System.Globalization;
-namespace InterReact;
+﻿using InterReact.Core;
+using InterReact.Enums;
 
-public sealed class StringTick : ITick
+namespace InterReact.Messages.MarketData.ITick;
+
+public sealed class StringTick : Interfaces.ITick
 {
     public int RequestId { get; private init; }
     public TickType TickType { get; private init; } = TickType.Undefined;
@@ -9,7 +11,7 @@ public sealed class StringTick : ITick
     private StringTick(int requestId, TickType tickType, string value) 
         => (RequestId, TickType, Value) = (requestId, tickType, value);
 
-    internal static ITick Create(ResponseReader r)
+    internal static Interfaces.ITick Create(ResponseReader r)
     {
         r.IgnoreMessageVersion();
         int requestId = r.ReadInt();

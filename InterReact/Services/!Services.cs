@@ -1,4 +1,6 @@
-﻿namespace InterReact;
+﻿using InterReact.Core;
+
+namespace InterReact.Services;
 
 public partial class Service(Request request, Response response) : IDisposable
 {

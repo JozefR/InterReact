@@ -1,4 +1,4 @@
-﻿namespace InterReact;
+﻿namespace InterReact.Messages.Order;
 
 public sealed class OrderComboLeg(double price) // input + output
 {

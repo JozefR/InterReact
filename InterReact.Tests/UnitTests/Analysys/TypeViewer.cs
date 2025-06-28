@@ -1,5 +1,6 @@
 ﻿using System.Reflection;
-namespace Analysis;
+
+namespace UnitTests.Analysys;
 
 public class Type_Viewer(ITestOutputHelper output) : UnitTestBase(output)
 {

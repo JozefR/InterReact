@@ -1,4 +1,4 @@
-﻿namespace InterReact;
+﻿namespace InterReact.Messages.Wsh;
 
 public sealed class WshEventData // input
 {

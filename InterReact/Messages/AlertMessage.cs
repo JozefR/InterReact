@@ -1,6 +1,9 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.Text.RegularExpressions;
-namespace InterReact;
+using InterReact.Core;
+using InterReact.Interfaces;
+
+namespace InterReact.Messages;
 
 /// <summary>
 /// Alert can represent an error, warning or informative message.

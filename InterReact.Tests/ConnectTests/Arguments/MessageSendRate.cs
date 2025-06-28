@@ -1,7 +1,7 @@
-﻿using Microsoft.Extensions.Logging;
-using System.Diagnostics;
+﻿using System.Diagnostics;
+using Microsoft.Extensions.Logging;
 
-namespace Args;
+namespace ConnectTests.Arguments;
 
 public class MessageSendRate(ITestOutputHelper output) : ConnectTestBase(output, LogLevel.Debug)
 {

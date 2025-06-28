@@ -1,10 +1,12 @@
-﻿using Microsoft.Reactive.Testing;
-using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics.CodeAnalysis;
 using System.Reactive;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Reactive.Threading.Tasks;
-namespace Extension;
+using InterReact.Extensions;
+using Microsoft.Reactive.Testing;
+
+namespace UnitTests.Extensions;
 
 [SuppressMessage("Usage", "IDE0305:CollectiionExpression")]
 public class CacheSourceTests(ITestOutputHelper output) : ReactiveUnitTestBase(output)

@@ -1,5 +1,8 @@
 ﻿using RxSockets;
 using System.Net;
+using InterReact.Core;
+using InterReact.Services;
+
 namespace InterReact;
 
 public interface IInterReactClient : IAsyncDisposable
