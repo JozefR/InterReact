@@ -1,8 +1,10 @@
-﻿namespace InterReact;
+﻿using InterReact.Core;
+
+namespace InterReact.Messages.Order;
 
 public sealed class CompletedOrder // does not have OrderId!
 {
-    public Contract Contract { get; } = new();
+    public Contract.Contract Contract { get; } = new();
     public Order Order { get; } = new();
     public OrderState OrderState { get; } = new();
     internal CompletedOrder(ResponseReader reader)

@@ -1,6 +1,10 @@
 ﻿using Microsoft.Extensions.Logging.Abstractions;
 using System.Net;
 using System.Security.Cryptography;
+using InterReact.Consts;
+using InterReact.Enums;
+using InterReact.Utility;
+
 namespace InterReact;
 
 public sealed class InterReactOptions
@@ -16,7 +20,7 @@ public sealed class InterReactOptions
     /// Specify the port(s) used to attempt connection to TWS/Gateway.
     /// If unspecified, connection will be attempted on ports 7496 and 7497, 4001, 4002.
     /// </summary>
-    public IEnumerable<int> IBPortAddresses { get; set; } = Extension.IBDefaultPorts;
+    public IEnumerable<int> IBPortAddresses { get; set; } = IBDefaultPortExtensions.IBDefaultPorts;
     /// <summary>
     /// Specify a client id. Up to 8 clients can attach to TWS/Gateway.
     /// Each client requires a unique Id. The default Id is random.

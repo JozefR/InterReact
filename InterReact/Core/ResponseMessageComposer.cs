@@ -1,5 +1,20 @@
 ﻿using System.IO;
-namespace InterReact;
+using InterReact.Enums;
+using InterReact.Messages;
+using InterReact.Messages.Account;
+using InterReact.Messages.Contract;
+using InterReact.Messages.HistoricalTicks;
+using InterReact.Messages.MarketData;
+using InterReact.Messages.MarketData.ITick;
+using InterReact.Messages.MarketData.TickByTick;
+using InterReact.Messages.MarketDepth;
+using InterReact.Messages.News;
+using InterReact.Messages.Order;
+using InterReact.Messages.other;
+using InterReact.Messages.Scanner;
+using InterReact.Messages.Wsh;
+
+namespace InterReact.Core;
 
 public sealed class ResponseMessageComposer(IClock clock, ResponseReader reader)
 {

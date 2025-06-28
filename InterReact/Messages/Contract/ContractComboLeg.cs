@@ -1,4 +1,8 @@
-﻿namespace InterReact;
+﻿using InterReact.Consts;
+using InterReact.Core;
+using InterReact.Enums;
+
+namespace InterReact.Messages.Contract;
 
 public sealed class ContractComboLeg // input + output
 {

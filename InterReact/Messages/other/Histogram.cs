@@ -1,4 +1,7 @@
-﻿namespace InterReact;
+﻿using InterReact.Core;
+using InterReact.Interfaces;
+
+namespace InterReact.Messages.other;
 
 public sealed class HistogramData : IHasRequestId
 {

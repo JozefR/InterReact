@@ -1,6 +1,9 @@
-﻿namespace InterReact;
+﻿using InterReact.Core;
+using InterReact.Enums;
 
-public sealed class GenericTick : ITick
+namespace InterReact.Messages.MarketData.ITick;
+
+public sealed class GenericTick : Interfaces.ITick
 {
     public int RequestId { get; }
     public TickType TickType { get; }

@@ -3,6 +3,8 @@ using Stringification;
 using System.Diagnostics.CodeAnalysis;
 using System.Reactive;
 using System.Reactive.Linq;
+using InterReact.Extensions;
+
 namespace Extension;
 
 [SuppressMessage("Usage", "IDE0305:CollectiionExpression")]

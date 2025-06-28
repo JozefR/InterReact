@@ -1,4 +1,6 @@
-﻿namespace InterReact;
+﻿using InterReact.Core;
+
+namespace InterReact.Messages.Order;
 
 public sealed class OrderBound
 {

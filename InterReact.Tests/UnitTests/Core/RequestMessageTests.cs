@@ -1,6 +1,10 @@
 ﻿using Microsoft.Extensions.Logging.Abstractions;
 using RxSockets;
 using System.Globalization;
+using InterReact.Core;
+using InterReact.Messages.Contract;
+using InterReact.Utility;
+
 namespace Core;
 
 public class RequestMessageTests(ITestOutputHelper output) : UnitTestBase(output)

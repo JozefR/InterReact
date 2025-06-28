@@ -1,4 +1,7 @@
-﻿namespace InterReact;
+﻿using InterReact.Core;
+using InterReact.Interfaces;
+
+namespace InterReact.Messages.Account;
 
 public sealed class AccountUpdateMulti : IHasRequestId
 {

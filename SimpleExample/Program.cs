@@ -6,6 +6,10 @@
 
 using System.Reactive.Linq;
 using InterReact;
+using InterReact.Consts;
+using InterReact.Extensions;
+using InterReact.Messages;
+using InterReact.Messages.Contract;
 
 // Create the InterReact client by connecting to TWS/Gateway on your local machine.
 IInterReactClient client = await InterReactClient.ConnectAsync();

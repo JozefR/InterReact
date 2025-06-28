@@ -1,4 +1,4 @@
-﻿namespace InterReact;
+﻿namespace InterReact.Messages.other;
 
 public sealed class IneligibilityReason
 {

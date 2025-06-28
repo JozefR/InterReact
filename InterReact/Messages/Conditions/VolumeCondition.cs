@@ -1,4 +1,4 @@
-﻿namespace InterReact;
+﻿namespace InterReact.Messages.Conditions;
 
 public class VolumeCondition : ContractCondition
 {

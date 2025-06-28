@@ -1,4 +1,8 @@
-﻿namespace InterReact;
+﻿using InterReact.Core;
+using InterReact.Interfaces;
+using InterReact.Messages.Contract;
+
+namespace InterReact.Messages.other;
 
 public sealed class SymbolSamples : IHasRequestId
 {

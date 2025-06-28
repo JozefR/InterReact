@@ -1,4 +1,7 @@
-﻿namespace InterReact;
+﻿using InterReact.Core;
+using InterReact.Interfaces;
+
+namespace InterReact.Messages.Account;
 
 public sealed class AccountPositionsMulti : IHasRequestId
 {
@@ -6,7 +9,7 @@ public sealed class AccountPositionsMulti : IHasRequestId
     public bool IsEndMessage { get; }
     public string Account { get; }
     public string ModelCode { get; }
-    public Contract Contract { get; }
+    public Contract.Contract Contract { get; }
     public decimal Position { get; }
     public double AverageCost { get; }
     internal AccountPositionsMulti(ResponseReader r, bool isEndMessage)

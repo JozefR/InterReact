@@ -1,4 +1,6 @@
-﻿namespace InterReact;
+﻿using InterReact.Interfaces;
+
+namespace InterReact.Extensions;
 
 public static partial class Extension
 {

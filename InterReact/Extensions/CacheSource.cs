@@ -1,6 +1,7 @@
 ﻿using System.Reactive.Disposables;
 using System.Reactive.Subjects;
-namespace InterReact;
+
+namespace InterReact.Extensions;
 
 public static partial class Extension
 {

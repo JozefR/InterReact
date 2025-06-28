@@ -9,6 +9,14 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Linq;
 using System.Reactive.Linq;
+using InterReact.Consts;
+using InterReact.Enums;
+using InterReact.Extensions;
+using InterReact.Messages;
+using InterReact.Messages.Contract;
+using InterReact.Messages.MarketData.ITick;
+using InterReact.Messages.Order;
+using InterReact.Services;
 
 // Create a logger which will write messages to the console.
 ILoggerFactory loggerFactory = LoggerFactory.Create(builder => builder

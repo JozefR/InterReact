@@ -1,5 +1,11 @@
 ﻿using System.Reactive.Subjects;
-namespace InterReact;
+using InterReact.Core;
+using InterReact.Extensions;
+using InterReact.Interfaces;
+using InterReact.Messages.Contract;
+using InterReact.Messages.Order;
+
+namespace InterReact.Services;
 
 public partial class Service
 {

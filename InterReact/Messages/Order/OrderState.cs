@@ -1,5 +1,7 @@
 ﻿
-namespace InterReact;
+using InterReact.Consts;
+
+namespace InterReact.Messages.Order;
 
 public sealed class OrderState
 {

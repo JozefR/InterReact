@@ -1,4 +1,4 @@
-﻿namespace InterReact;
+﻿namespace InterReact.Consts;
 
 public static class OrderClearingIntent
 {

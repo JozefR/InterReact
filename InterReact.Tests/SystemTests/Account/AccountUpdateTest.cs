@@ -1,5 +1,7 @@
 ﻿using Stringification;
 using System.Reactive.Linq;
+using InterReact.Messages.Account;
+
 namespace Account;
 
 public class AccountUpdate(ITestOutputHelper output, TestFixture fixture) : CollectionTestBase(output, fixture)

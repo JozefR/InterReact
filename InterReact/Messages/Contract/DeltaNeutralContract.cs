@@ -1,4 +1,7 @@
-﻿namespace InterReact;
+﻿using InterReact.Core;
+using InterReact.Interfaces;
+
+namespace InterReact.Messages.Contract;
 
 /// <summary>
 /// Delta-Neutral Underlying Component.

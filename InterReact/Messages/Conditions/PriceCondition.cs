@@ -1,6 +1,9 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
-namespace InterReact;
+using InterReact.Core;
+using InterReact.Enums;
+
+namespace InterReact.Messages.Conditions;
 
 public static class CTriggerMethod
 {

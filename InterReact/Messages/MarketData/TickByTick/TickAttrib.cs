@@ -1,4 +1,6 @@
-﻿namespace InterReact;
+﻿using InterReact.Utility;
+
+namespace InterReact.Messages.MarketData.TickByTick;
 
 public sealed class TickAttribBidAsk
 {

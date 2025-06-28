@@ -1,4 +1,8 @@
-﻿namespace InterReact;
+﻿using InterReact.Consts;
+using InterReact.Core;
+using InterReact.Interfaces;
+
+namespace InterReact.Messages.Order;
 
 public sealed class OrderStatusReport : IHasOrderId
 {

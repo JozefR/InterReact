@@ -1,5 +1,9 @@
 ﻿using Microsoft.Reactive.Testing;
 using System.Diagnostics;
+using InterReact.Extensions;
+using InterReact.Interfaces;
+using InterReact.Messages;
+
 namespace Extension;
 
 public class ToObservableWithId(ITestOutputHelper output) : ReactiveUnitTestBase(output)

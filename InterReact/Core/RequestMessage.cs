@@ -1,8 +1,11 @@
-﻿using RxSockets;
-using System.Globalization;
+﻿using System.Globalization;
 using System.IO;
 using System.Runtime.CompilerServices;
-namespace InterReact;
+using InterReact.Messages.Contract;
+using InterReact.Utility;
+using RxSockets;
+
+namespace InterReact.Core;
 
 public sealed class RequestMessage
 {

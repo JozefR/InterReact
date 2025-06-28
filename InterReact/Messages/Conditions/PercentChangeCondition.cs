@@ -1,5 +1,6 @@
 ﻿using System.Globalization;
-namespace InterReact;
+
+namespace InterReact.Messages.Conditions;
 
 public class PercentChangeCondition : ContractCondition
 {

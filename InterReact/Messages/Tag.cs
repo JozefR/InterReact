@@ -1,6 +1,6 @@
 ﻿using Stringification;
 
-namespace InterReact;
+namespace InterReact.Messages;
 
 public sealed class Tag // input + output
 {

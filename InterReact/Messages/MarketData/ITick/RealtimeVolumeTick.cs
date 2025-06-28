@@ -1,5 +1,8 @@
 ﻿using System.Globalization;
-namespace InterReact;
+using InterReact.Core;
+using InterReact.Enums;
+
+namespace InterReact.Messages.MarketData.ITick;
 
 /// <summary>
 /// TickRealtimeVolume data provides a useful alternative to data provided by LastPrice, LastSize, Volume and Time ticks.
@@ -7,7 +10,7 @@ namespace InterReact;
 /// TickRealtimeVolume ticks are obtained by parsing TickString.
 /// When TickRealtimeVolume is used, redundant Tick messages (above) can be removed using the TickRedundantRealtimeVolumeFilter.
 /// </summary>
-public sealed class RealtimeVolumeTick : ITick // from StringTick
+public sealed class RealtimeVolumeTick : Interfaces.ITick // from StringTick
 {
     public int RequestId { get; }
     public TickType TickType { get; }

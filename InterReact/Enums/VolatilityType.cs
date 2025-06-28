@@ -1,4 +1,4 @@
-﻿namespace InterReact;
+﻿namespace InterReact.Enums;
 
 /// <summary>
 /// For volatility orders only.

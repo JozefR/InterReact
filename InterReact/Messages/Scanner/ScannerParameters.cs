@@ -1,4 +1,6 @@
-﻿namespace InterReact;
+﻿using InterReact.Core;
+
+namespace InterReact.Messages.Scanner;
 
 public sealed class ScannerParameters
 {

@@ -4,6 +4,8 @@ using System.Reactive;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Reactive.Threading.Tasks;
+using InterReact.Extensions;
+
 namespace Extension;
 
 [SuppressMessage("Usage", "IDE0305:CollectiionExpression")]

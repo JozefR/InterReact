@@ -1,4 +1,11 @@
-﻿namespace InterReact;
+﻿using InterReact.Consts;
+using InterReact.Enums;
+using InterReact.Messages;
+using InterReact.Messages.Conditions;
+using InterReact.Messages.Contract;
+using InterReact.Messages.Order;
+
+namespace InterReact.Core;
 
 internal sealed class OrderDecoder
 {

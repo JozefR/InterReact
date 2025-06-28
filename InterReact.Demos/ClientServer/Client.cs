@@ -1,5 +1,8 @@
 ﻿using System.Diagnostics;
 using System.Net;
+using InterReact.Messages.Contract;
+using InterReact.Messages.MarketData.ITick;
+
 namespace ClientServer;
 
 public sealed class Client : IAsyncDisposable

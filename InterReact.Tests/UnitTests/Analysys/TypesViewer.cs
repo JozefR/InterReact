@@ -3,6 +3,11 @@ using System.Diagnostics;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Security;
+using InterReact.Enums;
+using InterReact.Extensions;
+using InterReact.Messages.MarketData.ITick;
+using InterReact.Services;
+
 namespace Analysis;
 
 public class Types_Viewer(ITestOutputHelper output) : UnitTestBase(output)

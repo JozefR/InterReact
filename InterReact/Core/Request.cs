@@ -1,4 +1,13 @@
-﻿namespace InterReact;
+﻿using InterReact.Consts;
+using InterReact.Enums;
+using InterReact.Messages;
+using InterReact.Messages.Conditions;
+using InterReact.Messages.Contract;
+using InterReact.Messages.Order;
+using InterReact.Messages.Scanner;
+using InterReact.Messages.Wsh;
+
+namespace InterReact.Core;
 
 /// <summary>
 /// Methods which send request messages to TWS/Gateway.

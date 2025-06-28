@@ -1,5 +1,9 @@
 ﻿using Stringification;
 using System.Reactive.Linq;
+using InterReact.Consts;
+using InterReact.Interfaces;
+using InterReact.Messages;
+using InterReact.Messages.Contract;
 
 namespace MarketData;
 

@@ -1,4 +1,11 @@
-﻿namespace InterReact;
+﻿using InterReact.Enums;
+using InterReact.Extensions;
+using InterReact.Interfaces;
+using InterReact.Messages;
+using InterReact.Messages.Contract;
+using InterReact.Messages.MarketData;
+
+namespace InterReact.Services;
 
 public partial class Service
 {

@@ -1,4 +1,4 @@
-namespace InterReact;
+namespace InterReact.Enums;
 
 /// <summary>
 /// Indicates One-Cancels-All orders.

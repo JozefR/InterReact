@@ -1,4 +1,6 @@
-﻿namespace InterReact;
+﻿using InterReact.Core;
+
+namespace InterReact.Messages.other;
 
 public sealed class FamilyCodes
 {

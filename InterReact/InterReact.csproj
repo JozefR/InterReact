@@ -26,7 +26,6 @@
     <PackageReference Include="RxSockets" Version="7.0.0" />
     <PackageReference Include="Stringification" Version="4.0.1" />
     <PackageReference Include="System.Reactive" Version="6.0.1" />
-    <None Include="worm64.png" Pack="true" PackagePath="\" />
   </ItemGroup>
 
 </Project>

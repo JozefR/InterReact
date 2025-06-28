@@ -1,10 +1,13 @@
-﻿using NodaTime.Text;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Reactive.Concurrency;
 using System.Reactive.Disposables;
-namespace InterReact;
+using InterReact.Enums;
+using InterReact.Messages.Contract;
+using NodaTime.Text;
+
+namespace InterReact.Extensions;
 
 public record struct ContractDetailsTimeEvent(ZonedDateTime Time, ContractTimeStatus Status);
 public record struct ContractDetailsTimePeriod(ContractDetailsTimeEvent? Previous, ContractDetailsTimeEvent? Next);

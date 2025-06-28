@@ -1,4 +1,4 @@
-﻿namespace InterReact;
+﻿namespace InterReact.Utility;
 
 internal readonly struct BitMask
 {

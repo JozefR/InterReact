@@ -1,4 +1,4 @@
-namespace InterReact;
+namespace InterReact.Enums;
 
 public enum GenericTickType
 {

@@ -1,4 +1,7 @@
-﻿namespace InterReact;
+﻿using InterReact.Core;
+using InterReact.Interfaces;
+
+namespace InterReact.Messages.HistoricalTicks;
 
 //public static readonly ErrorResponse HistoricalDataServiceError = new(162, "Historical market data Service error message.");
 

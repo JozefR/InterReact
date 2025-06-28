@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
-namespace InterReact;
+
+namespace InterReact.Core;
 
 [SuppressMessage("Usage", "CA1822", Scope = "member")]
 public sealed class ResponseParser(ILogger<ResponseParser> logger)

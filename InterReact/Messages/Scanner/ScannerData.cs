@@ -1,4 +1,9 @@
-﻿namespace InterReact;
+﻿using InterReact.Core;
+using InterReact.Enums;
+using InterReact.Interfaces;
+using InterReact.Messages.Contract;
+
+namespace InterReact.Messages.Scanner;
 
 public sealed class ScannerData : IHasRequestId
 {

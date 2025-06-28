@@ -1,4 +1,6 @@
-﻿namespace ClientServer;
+﻿using InterReact.Enums;
+
+namespace ClientServer;
 
 public static partial class Extension
 {

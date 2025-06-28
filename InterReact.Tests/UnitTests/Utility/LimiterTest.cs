@@ -1,5 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using System.Diagnostics;
+using InterReact.Utility;
+
 namespace Utility;
 
 public sealed class Limiter(ITestOutputHelper output) : UnitTestBase(output)
