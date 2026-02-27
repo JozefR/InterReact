@@ -12,20 +12,15 @@ public sealed class AccountTools
     [McpServerTool, Description("Get Account Summary.")]
     public static async Task<string> GetAccountSummary()
     {
-        // ILoggerFactory loggerFactory = LoggerFactory.Create(builder => builder
-        //     .AddSimpleConsole(c => c.SingleLine = true)
-        //     .SetMinimumLevel(LogLevel.Information));
-        //
-        // IInterReactClient client = await InterReactClient.ConnectAsync(options => options.LogFactory = loggerFactory);
-        //
-        // var positions = client.Service.GetAccountPositionsMultiAsync();
+        ILoggerFactory loggerFactory = LoggerFactory.Create(builder => builder
+            .AddSimpleConsole(c => c.SingleLine = true)
+            .SetMinimumLevel(LogLevel.Information));
         
-        var result = new
-        {
-            Event = "test",
-            Status = "ok"
-        };
-        return await Task.FromResult(JsonSerializer.Serialize(result));
+        IInterReactClient client = await InterReactClient.ConnectAsync(options => options.LogFactory = loggerFactory);
+        
+        var positions = client.Service.GetAccountPositionsMultiAsync();
+        
+        return await Task.FromResult(JsonSerializer.Serialize(positions));
     }
     
     [McpServerTool, Description("Get Portfolio Value.")]
