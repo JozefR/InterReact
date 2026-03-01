@@ -401,13 +401,13 @@ public sealed class Request(InterReactOptions options, Func<RequestMessage> requ
         RequestMessage m = CreateMessage()
             .Write(RequestCode.RequestHistoricalData, requestId)
             .WriteContract(contract)
-            .Write(true) // include expired
+            .Write(contract.IncludeExpired)
             .Write(
                 endDateTime,
                 barSize,
                 duration,
-                regularTradingHoursOnly,
                 whatToShow,
+                regularTradingHoursOnly,
                 dateFormat);
 
         if (contract.SecurityType == ContractSecurityType.Bag)
@@ -663,7 +663,7 @@ public sealed class Request(InterReactOptions options, Func<RequestMessage> requ
         CreateMessage()
             .Write(RequestCode.RequestHeadTimestamp, requestId)
             .WriteContract(contract)
-            .Write(true) // includeExpired
+            .Write(contract.IncludeExpired)
             .Write(useRth, whatToShow, formatDate)
             .Send();
     }
@@ -678,7 +678,7 @@ public sealed class Request(InterReactOptions options, Func<RequestMessage> requ
         CreateMessage()
             .Write(RequestCode.RequestHistogramData, requestId)
             .WriteContract(contract)
-            .Write(true) // includeExpired
+            .Write(contract.IncludeExpired)
             .Write(useRth, period)
             .Send();
     }
@@ -708,7 +708,7 @@ public sealed class Request(InterReactOptions options, Func<RequestMessage> requ
         CreateMessage()
             .Write(RequestCode.ReqHistoricalTicks, requestId)
             .WriteContract(contract)
-            .Write(true) // includeExpired
+            .Write(contract.IncludeExpired)
             .Write(startDateTime, endDateTime, numberOfTicks, whatToShow, useRth, ignoreSize)
             .Write(options)
             .Send();
