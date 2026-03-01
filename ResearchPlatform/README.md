@@ -32,3 +32,37 @@ dotnet build ResearchPlatform.sln
 ```bash
 dotnet run --project src/Composition/ResearchPlatform.App/ResearchPlatform.App.csproj
 ```
+
+## Configuration
+
+Environment-aware settings are loaded from:
+
+1. `appsettings.json`
+2. `appsettings.{Environment}.json`
+3. `RP__...` environment variable overrides
+
+Environment resolution order:
+
+1. `--environment <Name>` argument
+2. `RP_ENVIRONMENT`
+3. `DOTNET_ENVIRONMENT`
+4. `ASPNETCORE_ENVIRONMENT`
+5. default `Development`
+
+Validate all configured environments:
+
+```bash
+./scripts/validate-config.sh
+```
+
+Fast JSON structure validation:
+
+```bash
+./scripts/validate-config-json.sh
+```
+
+Validate one environment:
+
+```bash
+RP_ENVIRONMENT=Test dotnet run --project src/Composition/ResearchPlatform.App/ResearchPlatform.App.csproj -- --validate-config
+```
