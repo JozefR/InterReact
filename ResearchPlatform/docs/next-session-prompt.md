@@ -9,8 +9,8 @@ Load project context from:
 - /Users/jozefrandjak/Documents/git/InterReactMCP/ResearchPlatform/docs/configuration.md
 
 Current objective:
-- Continue ResearchPlatform build from completed T-001, T-002, and T-003.
-- Start with T-004 (canonical data schema + migrations).
+- Continue ResearchPlatform build from completed T-001, T-002, T-003, T-004, and T-005.
+- Start with T-006 (point-in-time index constituents for SP500/SP100).
 
 Constraints:
 - Keep module boundaries strict (modules reference contracts only).
@@ -22,6 +22,5 @@ Before coding, run:
 - ./scripts/validate-config-json.sh
 - ./scripts/validate-config.sh
 
-Then propose and implement T-003 end-to-end.
-Then propose and implement T-004 end-to-end.
+Then propose and implement T-006 end-to-end.
 ```

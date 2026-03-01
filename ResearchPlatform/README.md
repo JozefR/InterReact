@@ -78,3 +78,38 @@ Run the same checks locally that CI runs:
 Workflow:
 
 - `.github/workflows/ci.yml`
+
+## Data Schema and Migrations
+
+Canonical warehouse schema docs:
+
+- `docs/data-schema.md`
+- `docs/symbol-identity.md`
+
+Apply migrations locally:
+
+```bash
+./scripts/db-migrate.sh
+```
+
+First-time local tool setup (already committed via tool manifest):
+
+```bash
+dotnet tool restore
+```
+
+## Symbol Identity (T-005)
+
+Symbol master/mapping enrichment contract and implementation:
+
+- contracts: `src/Contracts/ResearchPlatform.Contracts/Abstractions/ISymbolIdentityRepository.cs`
+- implementation: `src/Modules/DataWarehouse/Symbols/EfSymbolIdentityRepository.cs`
+- details: `docs/symbol-identity.md`
+
+Optional smoke run:
+
+```bash
+ABS_DB="/Users/jozefrandjak/Documents/git/InterReactMCP/ResearchPlatform/researchplatform-smoke.db"
+RP__DataWarehouse__ConnectionString="Data Source=${ABS_DB}" \
+  dotnet run --project src/Composition/ResearchPlatform.App/ResearchPlatform.App.csproj -- --symbol-smoke
+```

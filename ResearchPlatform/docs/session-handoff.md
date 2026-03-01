@@ -11,7 +11,7 @@ In this session we:
 2. Converted analysis into a practical system roadmap.
 3. Locked project scope for `Research Platform v1`.
 4. Produced PRD/metrics/backlog structure in chat.
-5. Implemented `T-001` and `T-002` in code.
+5. Implemented `T-001` through `T-004` in code.
 6. Created and extended Notion architecture documentation.
 
 ---
@@ -134,7 +134,9 @@ Current execution status:
 - `T-001`: DONE
 - `T-002`: DONE
 - `T-003`: DONE
-- `T-004+`: NOT STARTED
+- `T-004`: DONE
+- `T-005`: DONE
+- `T-006+`: NOT STARTED
 
 ---
 
@@ -190,21 +192,124 @@ Validation results:
 Notable fix during T-002:
 - Fixed config deserialization issue by using `JsonSerializer.Deserialize(...)` explicitly.
 
+## 6.3 T-003 (DONE): CI checks
+Implemented:
+- local CI orchestrator:
+  - `scripts/ci-validate.sh`
+- GitHub Actions workflow:
+  - `.github/workflows/ci.yml`
+
+Checks enforced:
+- restore
+- build with warnings as errors
+- format/lint verification (`dotnet format --verify-no-changes`)
+- module boundary check
+- config schema validation
+- runtime config validation
+- test stage scaffold (`dotnet test`)
+
+Validation:
+- `./scripts/ci-validate.sh` passed end-to-end.
+
+## 6.4 T-004 (DONE): Canonical schema + migrations
+Implemented in `DataWarehouse`:
+- EF Core schema model and context:
+  - `src/Modules/DataWarehouse/Schema/ResearchWarehouseDbContext.cs`
+- Entity classes:
+  - `src/Modules/DataWarehouse/Schema/Entities/*`
+- Domain enums:
+  - `src/Modules/DataWarehouse/Schema/Enums/*`
+- Design-time context factory:
+  - `src/Modules/DataWarehouse/Schema/Design/ResearchWarehouseDesignTimeFactory.cs`
+- Initial migration:
+  - `src/Modules/DataWarehouse/Schema/Migrations/20260301131711_InitialCanonicalSchema.cs`
+  - `src/Modules/DataWarehouse/Schema/Migrations/ResearchWarehouseDbContextModelSnapshot.cs`
+- Local EF tool manifest:
+  - `.config/dotnet-tools.json`
+- Migration apply script:
+  - `scripts/db-migrate.sh`
+- Schema documentation:
+  - `docs/data-schema.md`
+
+Canonical tables created:
+- `symbol_master`
+- `symbol_mapping`
+- `index_constituents_pit`
+- `prices_daily_raw`
+- `corporate_actions`
+- `prices_daily_adjusted`
+- `ingestion_runs`
+- `qa_results`
+
+Validation:
+- migration generated successfully with `dotnet dotnet-ef migrations add InitialCanonicalSchema`
+- full CI validation still passes after schema integration.
+
+## 6.5 T-005 (DONE): Symbol master + mapping enrichment
+Implemented contract surface in `ResearchPlatform.Contracts`:
+- `src/Contracts/ResearchPlatform.Contracts/Abstractions/ISymbolIdentityRepository.cs`
+- `src/Contracts/ResearchPlatform.Contracts/Symbols/AssetType.cs`
+- `src/Contracts/ResearchPlatform.Contracts/Symbols/SymbolEnrichmentRequest.cs`
+- `src/Contracts/ResearchPlatform.Contracts/Symbols/SymbolEnrichmentResult.cs`
+- `src/Contracts/ResearchPlatform.Contracts/Symbols/SymbolMasterSnapshot.cs`
+- `src/Contracts/ResearchPlatform.Contracts/Symbols/SymbolMappingSnapshot.cs`
+
+Implemented DataWarehouse repository/access patterns:
+- `src/Modules/DataWarehouse/Symbols/EfSymbolIdentityRepository.cs`
+- `src/Modules/DataWarehouse/Symbols/SqliteSymbolIdentityRepositoryFactory.cs`
+
+Composition support:
+- Added `--symbol-smoke` command in:
+  - `src/Composition/ResearchPlatform.App/Program.cs`
+
+Documentation:
+- `docs/symbol-identity.md`
+- updated `README.md`
+- updated `docs/data-schema.md`
+
+Key behavior added:
+- canonical symbol upsert with metadata refresh
+- provider-symbol effective-date mapping upsert
+- overlap resolution/closure for mapping timelines
+- provider-symbol as-of resolution query
+- active symbol and mapping list queries
+
+Notable fix discovered during T-005 validation:
+- corrected SQLite check-constraint expressions in:
+  - `src/Modules/DataWarehouse/Schema/ResearchWarehouseDbContext.cs`
+  - `src/Modules/DataWarehouse/Schema/Migrations/20260301131711_InitialCanonicalSchema.cs`
+  - migration designer + snapshot files
+
+Validation:
+- build passes with warnings-as-errors
+- boundary/config checks pass
+- `dotnet format --verify-no-changes` currently hits intermittent MSBuild named-pipe timeout in this environment
+- smoke run verified successful upsert/resolve using absolute SQLite path
+
 ---
 
 ## 7. Complete Project Structure (current)
 ```text
 ResearchPlatform/
+  .config/
+    dotnet-tools.json
+  .github/
+    workflows/
+      ci.yml
   .gitignore
   README.md
   ResearchPlatform.sln
   docs/
     configuration.md
+    data-schema.md
     module-boundaries.md
     next-session-prompt.md
     session-handoff.md
+    symbol-identity.md
   scripts/
+    ci-validate.sh
     check-module-boundaries.sh
+    db-migrate.sh
     validate-config-json.sh
     validate-config.sh
   src/
@@ -223,6 +328,13 @@ ResearchPlatform/
         ResearchPlatform.Contracts.csproj
         Abstractions/
           IModule.cs
+          ISymbolIdentityRepository.cs
+        Symbols/
+          AssetType.cs
+          SymbolEnrichmentRequest.cs
+          SymbolEnrichmentResult.cs
+          SymbolMappingSnapshot.cs
+          SymbolMasterSnapshot.cs
     Modules/
       AiResearchAssistant/
         AiResearchAssistant.csproj
@@ -236,6 +348,9 @@ ResearchPlatform/
       DataWarehouse/
         DataWarehouse.csproj
         DataWarehouseModule.cs
+        Symbols/
+          EfSymbolIdentityRepository.cs
+          SqliteSymbolIdentityRepositoryFactory.cs
       ExperimentRunner/
         ExperimentRunner.csproj
         ExperimentRunnerModule.cs
@@ -288,22 +403,16 @@ When continuing, do not revert unrelated parent-repo changes unless explicitly r
 ---
 
 ## 11. Immediate Next Work (recommended)
-1. Start `T-004` (data schema + migrations).
-2. Then `T-005`/`T-006` (symbol mapping + PIT constituents).
+1. Start `T-006` (point-in-time constituent loading pipeline for SP500/SP100).
+2. Then `T-007` (ingestion connector interface).
+3. Then `T-008` (first provider adapter).
 
-T-003 completion summary:
-- Added local CI command:
-  - `scripts/ci-validate.sh`
-- Added GitHub Actions workflow:
-  - `.github/workflows/ci.yml`
-- CI checks include:
-  - restore
-  - build (`-warnaserror`)
-  - lint (`dotnet format --verify-no-changes`)
-  - module boundary check
-  - JSON config validation
-  - runtime config validation (`NO_BUILD=1`)
-  - test stage (`dotnet test`)
+T-005 completion summary:
+- Added symbol identity contracts and snapshots.
+- Added EF-backed symbol repository with timeline overlap handling.
+- Added optional `--symbol-smoke` command path in composition.
+- Added `docs/symbol-identity.md`.
+- Fixed migration check-constraint expressions for SQLite compatibility.
 
 ---
 
@@ -316,7 +425,7 @@ Use it directly to reload context in low-token sessions.
 ---
 
 ## 13. One-Paragraph Summary
-This session transformed thesis analysis into a concrete research-platform build path, locked scope (US equities, SP500/SP100, long-only, research-only), implemented architecture foundation (`T-001`) and environment-config foundation (`T-002`), validated both, and documented architecture rationale in Notion. The project is now ready to begin CI hardening (`T-003`) and then data model implementation (`T-004+`).
+This session transformed thesis analysis into a concrete research-platform build path, locked scope (US equities, SP500/SP100, long-only, research-only), implemented architecture/config/CI foundations (`T-001` to `T-003`), established the canonical warehouse schema migration (`T-004`), and completed symbol identity/mapping enrichment with repository access patterns (`T-005`). The project is now ready for PIT constituent pipeline implementation (`T-006`).
 
 ---
 

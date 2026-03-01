@@ -10,3 +10,8 @@
 
 # IDE
 .idea/
+
+# Local development databases
+**/researchplatform*.db
+**/researchplatform*.db-shm
+**/researchplatform*.db-wal
