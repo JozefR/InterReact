@@ -1,0 +1,21 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Contracts\ResearchPlatform.Contracts\ResearchPlatform.Contracts.csproj" />
+    <ProjectReference Include="..\..\Modules\AiResearchAssistant\AiResearchAssistant.csproj" />
+    <ProjectReference Include="..\..\Modules\BacktestEngine\BacktestEngine.csproj" />
+    <ProjectReference Include="..\..\Modules\DataIngestion\DataIngestion.csproj" />
+    <ProjectReference Include="..\..\Modules\DataWarehouse\DataWarehouse.csproj" />
+    <ProjectReference Include="..\..\Modules\ExperimentRunner\ExperimentRunner.csproj" />
+    <ProjectReference Include="..\..\Modules\MetricsReporting\MetricsReporting.csproj" />
+    <ProjectReference Include="..\..\Modules\StrategyRegistry\StrategyRegistry.csproj" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+</Project>
