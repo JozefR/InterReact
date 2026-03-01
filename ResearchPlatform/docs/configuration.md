@@ -40,6 +40,12 @@ Run:
 ./scripts/validate-config.sh
 ```
 
+Runtime validation can skip rebuild when already compiled:
+
+```bash
+NO_BUILD=1 ./scripts/validate-config.sh
+```
+
 Fast JSON-only validation (no build/run):
 
 ```bash

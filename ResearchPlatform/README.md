@@ -66,3 +66,15 @@ Validate one environment:
 ```bash
 RP_ENVIRONMENT=Test dotnet run --project src/Composition/ResearchPlatform.App/ResearchPlatform.App.csproj -- --validate-config
 ```
+
+## CI
+
+Run the same checks locally that CI runs:
+
+```bash
+./scripts/ci-validate.sh
+```
+
+Workflow:
+
+- `.github/workflows/ci.yml`

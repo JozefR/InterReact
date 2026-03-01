@@ -133,7 +133,8 @@ Canonical task IDs defined in session:
 Current execution status:
 - `T-001`: DONE
 - `T-002`: DONE
-- `T-003+`: NOT STARTED
+- `T-003`: DONE
+- `T-004+`: NOT STARTED
 
 ---
 
@@ -287,15 +288,22 @@ When continuing, do not revert unrelated parent-repo changes unless explicitly r
 ---
 
 ## 11. Immediate Next Work (recommended)
-1. Start `T-003` (CI checks):
-   - build solution
-   - boundary check script
-   - config validation scripts
-   - optional test stage scaffold
-2. Then `T-004`/`T-005`/`T-006` (data model foundations).
+1. Start `T-004` (data schema + migrations).
+2. Then `T-005`/`T-006` (symbol mapping + PIT constituents).
 
-Acceptance target for T-003:
-- one command/pipeline run that fails on boundary/config regression.
+T-003 completion summary:
+- Added local CI command:
+  - `scripts/ci-validate.sh`
+- Added GitHub Actions workflow:
+  - `.github/workflows/ci.yml`
+- CI checks include:
+  - restore
+  - build (`-warnaserror`)
+  - lint (`dotnet format --verify-no-changes`)
+  - module boundary check
+  - JSON config validation
+  - runtime config validation (`NO_BUILD=1`)
+  - test stage (`dotnet test`)
 
 ---
 

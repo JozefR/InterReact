@@ -9,8 +9,8 @@ Load project context from:
 - /Users/jozefrandjak/Documents/git/InterReactMCP/ResearchPlatform/docs/configuration.md
 
 Current objective:
-- Continue ResearchPlatform build from completed T-001 and T-002.
-- Start with T-003 (CI checks).
+- Continue ResearchPlatform build from completed T-001, T-002, and T-003.
+- Start with T-004 (canonical data schema + migrations).
 
 Constraints:
 - Keep module boundaries strict (modules reference contracts only).
@@ -23,4 +23,5 @@ Before coding, run:
 - ./scripts/validate-config.sh
 
 Then propose and implement T-003 end-to-end.
+Then propose and implement T-004 end-to-end.
 ```

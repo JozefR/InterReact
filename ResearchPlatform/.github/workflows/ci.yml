@@ -1,0 +1,32 @@
+name: ResearchPlatform CI
+
+on:
+  push:
+    paths:
+      - 'ResearchPlatform/**'
+  pull_request:
+    paths:
+      - 'ResearchPlatform/**'
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+        working-directory: ResearchPlatform
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+
+      - name: Dotnet info
+        run: dotnet --info
+
+      - name: Run CI validation
+        run: ./scripts/ci-validate.sh
