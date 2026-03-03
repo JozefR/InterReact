@@ -134,7 +134,7 @@ Key columns:
 ## Apply Migrations
 
 ```bash
-cd /Users/jozefrandjak/Documents/git/InterReactMCP/ResearchPlatform
+cd /path/to/ResearchPlatform
 ./scripts/db-migrate.sh
 ```
 
@@ -150,4 +150,4 @@ export RP__DataWarehouse__ConnectionString="Data Source=researchplatform.db"
 - SQLite is the initial migration target for development/research speed.
 - Constraints are intentionally strict to fail fast on invalid market data.
 - `T-005` added repository-level symbol master/mapping enrichment over this schema.
-- `T-006` will extend PIT index constituent loading for SP500/SP100 on top of this baseline.
+- `T-006` added PIT constituent snapshot loading/query access patterns for SP500/SP100 on top of this baseline.

@@ -76,4 +76,4 @@ Use an absolute SQLite path to avoid relative-path differences between tooling a
 ## Notes
 
 - This is a research-phase repository abstraction; additional cross-provider identity fields can be added in future tasks.
-- `T-006` will build PIT index constituent loading on top of this identity layer.
+- `T-006` now builds PIT index constituent loading on top of this identity layer.

@@ -85,6 +85,7 @@ Canonical warehouse schema docs:
 
 - `docs/data-schema.md`
 - `docs/symbol-identity.md`
+- `docs/pit-constituents.md`
 
 Apply migrations locally:
 
@@ -109,7 +110,21 @@ Symbol master/mapping enrichment contract and implementation:
 Optional smoke run:
 
 ```bash
-ABS_DB="/Users/jozefrandjak/Documents/git/InterReactMCP/ResearchPlatform/researchplatform-smoke.db"
+ABS_DB="$(pwd)/researchplatform-smoke.db"
 RP__DataWarehouse__ConnectionString="Data Source=${ABS_DB}" \
   dotnet run --project src/Composition/ResearchPlatform.App/ResearchPlatform.App.csproj -- --symbol-smoke
+```
+
+## PIT Constituents (T-006)
+
+PIT snapshot loader contract and implementation:
+
+- contracts: `src/Contracts/ResearchPlatform.Contracts/Abstractions/IIndexConstituentPitRepository.cs`
+- implementation: `src/Modules/DataWarehouse/Constituents/EfIndexConstituentPitRepository.cs`
+- details: `docs/pit-constituents.md`
+
+Optional smoke run:
+
+```bash
+dotnet run --project src/Composition/ResearchPlatform.App/ResearchPlatform.App.csproj -- --pit-smoke
 ```

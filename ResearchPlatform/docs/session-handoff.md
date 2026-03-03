@@ -1,7 +1,7 @@
 # ResearchPlatform Session Handoff (Complete)
 
 Last updated: 2026-03-01 (Europe/Vienna)
-Repo root: `/Users/jozefrandjak/Documents/git/InterReactMCP/ResearchPlatform`
+Repo root: `ResearchPlatform/`
 
 ## 0. Session Goal and What Was Discussed
 The user asked to analyze a bachelor thesis document about an automated trading system and create a comprehensive, implementation-ready long-term plan for building an AI-enabled trading platform later.
@@ -11,14 +11,14 @@ In this session we:
 2. Converted analysis into a practical system roadmap.
 3. Locked project scope for `Research Platform v1`.
 4. Produced PRD/metrics/backlog structure in chat.
-5. Implemented `T-001` through `T-004` in code.
+5. Implemented `T-001` through `T-006` in code.
 6. Created and extended Notion architecture documentation.
 
 ---
 
 ## 1. Thesis-Derived Findings (from analyzed .docx)
 Source document analyzed:
-- `/Users/jozefrandjak/Library/Mobile Documents/com~apple~CloudDocs/Bakalarka/Technicka-analyza-obchodneho-systemu.docx`
+- `Technicka-analyza-obchodneho-systemu.docx` (local path redacted)
 
 Key findings extracted:
 - Strategy family is Connors-style mean reversion (RSI short-term weakness + long-term trend filter + short-term recovery exit).
@@ -136,7 +136,8 @@ Current execution status:
 - `T-003`: DONE
 - `T-004`: DONE
 - `T-005`: DONE
-- `T-006+`: NOT STARTED
+- `T-006`: DONE
+- `T-007+`: NOT STARTED
 
 ---
 
@@ -286,6 +287,41 @@ Validation:
 - `dotnet format --verify-no-changes` currently hits intermittent MSBuild named-pipe timeout in this environment
 - smoke run verified successful upsert/resolve using absolute SQLite path
 
+## 6.6 T-006 (DONE): PIT index constituents (SP500/SP100)
+Implemented contract surface in `ResearchPlatform.Contracts`:
+- `src/Contracts/ResearchPlatform.Contracts/Abstractions/IIndexConstituentPitRepository.cs`
+- `src/Contracts/ResearchPlatform.Contracts/Universes/UniverseCodes.cs`
+- `src/Contracts/ResearchPlatform.Contracts/Universes/IndexConstituentInput.cs`
+- `src/Contracts/ResearchPlatform.Contracts/Universes/IndexConstituentSnapshotLoadRequest.cs`
+- `src/Contracts/ResearchPlatform.Contracts/Universes/IndexConstituentSnapshotLoadResult.cs`
+- `src/Contracts/ResearchPlatform.Contracts/Universes/IndexConstituentMembershipSnapshot.cs`
+
+Implemented DataWarehouse PIT loader/query repository:
+- `src/Modules/DataWarehouse/Constituents/EfIndexConstituentPitRepository.cs`
+- `src/Modules/DataWarehouse/Constituents/SqliteIndexConstituentPitRepositoryFactory.cs`
+
+Composition support:
+- Added `--pit-smoke` command in:
+  - `src/Composition/ResearchPlatform.App/Program.cs`
+
+Documentation:
+- `docs/pit-constituents.md`
+- updated `README.md`
+- updated `docs/data-schema.md`
+- updated `docs/symbol-identity.md`
+
+Key behavior added:
+- snapshot upsert semantics for `SP500` and `SP100`
+- active-membership closure with effective date window handling
+- as-of membership queries by date
+- membership history queries for one symbol
+- fail-fast unresolved canonical symbol checks
+
+Validation:
+- build passes with warnings-as-errors
+- boundary/config checks pass
+- `--pit-smoke` run confirms expected membership transitions and history windows
+
 ---
 
 ## 7. Complete Project Structure (current)
@@ -304,6 +340,7 @@ ResearchPlatform/
     data-schema.md
     module-boundaries.md
     next-session-prompt.md
+    pit-constituents.md
     session-handoff.md
     symbol-identity.md
   scripts/
@@ -327,6 +364,7 @@ ResearchPlatform/
       ResearchPlatform.Contracts/
         ResearchPlatform.Contracts.csproj
         Abstractions/
+          IIndexConstituentPitRepository.cs
           IModule.cs
           ISymbolIdentityRepository.cs
         Symbols/
@@ -335,6 +373,12 @@ ResearchPlatform/
           SymbolEnrichmentResult.cs
           SymbolMappingSnapshot.cs
           SymbolMasterSnapshot.cs
+        Universes/
+          IndexConstituentInput.cs
+          IndexConstituentMembershipSnapshot.cs
+          IndexConstituentSnapshotLoadRequest.cs
+          IndexConstituentSnapshotLoadResult.cs
+          UniverseCodes.cs
     Modules/
       AiResearchAssistant/
         AiResearchAssistant.csproj
@@ -348,6 +392,9 @@ ResearchPlatform/
       DataWarehouse/
         DataWarehouse.csproj
         DataWarehouseModule.cs
+        Constituents/
+          EfIndexConstituentPitRepository.cs
+          SqliteIndexConstituentPitRepositoryFactory.cs
         Symbols/
           EfSymbolIdentityRepository.cs
           SqliteSymbolIdentityRepositoryFactory.cs
@@ -383,7 +430,7 @@ Contents include:
 ## 9. Commands Used for Ongoing Validation
 Recommended at start of each future session:
 ```bash
-cd /Users/jozefrandjak/Documents/git/InterReactMCP/ResearchPlatform
+cd /path/to/ResearchPlatform
 ./scripts/check-module-boundaries.sh
 ./scripts/validate-config-json.sh
 ./scripts/validate-config.sh
@@ -403,16 +450,16 @@ When continuing, do not revert unrelated parent-repo changes unless explicitly r
 ---
 
 ## 11. Immediate Next Work (recommended)
-1. Start `T-006` (point-in-time constituent loading pipeline for SP500/SP100).
-2. Then `T-007` (ingestion connector interface).
-3. Then `T-008` (first provider adapter).
+1. Start `T-007` (ingestion connector interface).
+2. Then `T-008` (first provider adapter).
+3. Then `T-009` (corporate actions ingestion).
 
-T-005 completion summary:
-- Added symbol identity contracts and snapshots.
-- Added EF-backed symbol repository with timeline overlap handling.
-- Added optional `--symbol-smoke` command path in composition.
-- Added `docs/symbol-identity.md`.
-- Fixed migration check-constraint expressions for SQLite compatibility.
+T-006 completion summary:
+- Added PIT constituent contracts and snapshots.
+- Added EF-backed PIT snapshot loader/query repository for SP500/SP100.
+- Added optional `--pit-smoke` command path in composition.
+- Added `docs/pit-constituents.md`.
+- Verified as-of membership and history window behavior.
 
 ---
 
@@ -425,7 +472,7 @@ Use it directly to reload context in low-token sessions.
 ---
 
 ## 13. One-Paragraph Summary
-This session transformed thesis analysis into a concrete research-platform build path, locked scope (US equities, SP500/SP100, long-only, research-only), implemented architecture/config/CI foundations (`T-001` to `T-003`), established the canonical warehouse schema migration (`T-004`), and completed symbol identity/mapping enrichment with repository access patterns (`T-005`). The project is now ready for PIT constituent pipeline implementation (`T-006`).
+This session transformed thesis analysis into a concrete research-platform build path, locked scope (US equities, SP500/SP100, long-only, research-only), implemented architecture/config/CI foundations (`T-001` to `T-003`), established the canonical warehouse schema migration (`T-004`), completed symbol identity/mapping enrichment (`T-005`), and implemented the PIT constituent pipeline for SP500/SP100 (`T-006`). The project is now ready for ingestion connector abstractions (`T-007`).
 
 ---
 
