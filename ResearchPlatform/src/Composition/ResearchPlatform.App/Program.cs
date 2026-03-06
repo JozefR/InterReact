@@ -1,5 +1,6 @@
 using AiResearchAssistant;
 using BacktestEngine;
+using DataIngestion.Connectors;
 using DataWarehouse.Constituents;
 using DataIngestion;
 using DataWarehouse;
@@ -10,6 +11,7 @@ using MetricsReporting;
 using Microsoft.EntityFrameworkCore;
 using ResearchPlatform.App.Configuration;
 using ResearchPlatform.Contracts.Abstractions;
+using ResearchPlatform.Contracts.Ingestion;
 using ResearchPlatform.Contracts.Symbols;
 using ResearchPlatform.Contracts.Universes;
 using StrategyRegistry;
@@ -36,6 +38,12 @@ if (command.RunSymbolIdentitySmoke)
 if (command.RunPitConstituentSmoke)
 {
     await RunPitConstituentSmokeAsync(config);
+    return;
+}
+
+if (command.RunConnectorSmoke)
+{
+    await RunConnectorSmokeAsync(config);
     return;
 }
 
@@ -206,6 +214,39 @@ static async Task RunPitConstituentSmokeAsync(PlatformConfig config)
     }
 }
 
+static async Task RunConnectorSmokeAsync(PlatformConfig config)
+{
+    var connector = ProviderDataConnectorFactory.Create(config.DataIngestion.Provider);
+    var indexCode = config.DataIngestion.Universes.FirstOrDefault() ?? UniverseCodes.Sp500;
+
+    var constituentSnapshot = await connector.FetchConstituentSnapshotAsync(new ProviderConstituentSnapshotRequest(
+        IndexCode: indexCode,
+        EffectiveDate: new DateOnly(2026, 2, 15)));
+
+    var sampleSymbols = constituentSnapshot.Constituents
+        .Select(x => x.ProviderSymbol)
+        .Take(3)
+        .ToArray();
+
+    var prices = await connector.FetchDailyPricesAsync(new ProviderDailyPriceRequest(
+        ProviderSymbols: sampleSymbols,
+        FromDate: new DateOnly(2026, 2, 10),
+        ToDate: new DateOnly(2026, 2, 20)));
+
+    var actions = await connector.FetchCorporateActionsAsync(new ProviderCorporateActionRequest(
+        ProviderSymbols: sampleSymbols,
+        FromDate: new DateOnly(2026, 2, 1),
+        ToDate: new DateOnly(2026, 2, 28)));
+
+    Console.WriteLine("Connector smoke check completed.");
+    Console.WriteLine($"- Provider: {connector.ProviderCode}");
+    Console.WriteLine($"- Capabilities: index={connector.Capabilities.SupportsIndexConstituentSnapshots}, daily={connector.Capabilities.SupportsDailyPrices}, actions={connector.Capabilities.SupportsCorporateActions}");
+    Console.WriteLine($"- Universe snapshot: {constituentSnapshot.IndexCode} as-of {constituentSnapshot.EffectiveDate:yyyy-MM-dd} -> {constituentSnapshot.Constituents.Count} symbols");
+    Console.WriteLine($"- Daily prices fetched: {prices.Prices.Count} rows ({prices.FromDate:yyyy-MM-dd}..{prices.ToDate:yyyy-MM-dd})");
+    Console.WriteLine($"- Corporate actions fetched: {actions.Actions.Count} rows ({actions.FromDate:yyyy-MM-dd}..{actions.ToDate:yyyy-MM-dd})");
+    Console.WriteLine($"- Sample symbols: {string.Join(", ", sampleSymbols)}");
+}
+
 static async Task SeedSymbolsForPitSmokeAsync(ISymbolIdentityRepository repository)
 {
     var symbols = new[]
@@ -269,7 +310,8 @@ internal sealed record StartupCommand(
     string? EnvironmentOverride,
     bool ValidateConfigOnly,
     bool RunSymbolIdentitySmoke,
-    bool RunPitConstituentSmoke)
+    bool RunPitConstituentSmoke,
+    bool RunConnectorSmoke)
 {
     public static StartupCommand Parse(string[] args)
     {
@@ -277,6 +319,7 @@ internal sealed record StartupCommand(
         var validateConfigOnly = false;
         var runSymbolIdentitySmoke = false;
         var runPitConstituentSmoke = false;
+        var runConnectorSmoke = false;
 
         for (var i = 0; i < args.Length; i++)
         {
@@ -292,12 +335,15 @@ internal sealed record StartupCommand(
                 case "--pit-smoke":
                     runPitConstituentSmoke = true;
                     break;
+                case "--connector-smoke":
+                    runConnectorSmoke = true;
+                    break;
                 case "--environment" when i + 1 < args.Length:
                     environment = args[++i];
                     break;
             }
         }
 
-        return new StartupCommand(environment, validateConfigOnly, runSymbolIdentitySmoke, runPitConstituentSmoke);
+        return new StartupCommand(environment, validateConfigOnly, runSymbolIdentitySmoke, runPitConstituentSmoke, runConnectorSmoke);
     }
 }

@@ -86,6 +86,7 @@ Canonical warehouse schema docs:
 - `docs/data-schema.md`
 - `docs/symbol-identity.md`
 - `docs/pit-constituents.md`
+- `docs/ingestion-connectors.md`
 
 Apply migrations locally:
 
@@ -127,4 +128,18 @@ Optional smoke run:
 
 ```bash
 dotnet run --project src/Composition/ResearchPlatform.App/ResearchPlatform.App.csproj -- --pit-smoke
+```
+
+## Ingestion Connectors (T-007)
+
+Provider-agnostic ingestion connector contract and mock implementation:
+
+- contracts: `src/Contracts/ResearchPlatform.Contracts/Abstractions/IProviderDataConnector.cs`
+- mock connector: `src/Modules/DataIngestion/Connectors/Mock/MockProviderDataConnector.cs`
+- details: `docs/ingestion-connectors.md`
+
+Optional smoke run:
+
+```bash
+dotnet run --project src/Composition/ResearchPlatform.App/ResearchPlatform.App.csproj -- --connector-smoke
 ```

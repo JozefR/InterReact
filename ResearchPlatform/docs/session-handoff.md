@@ -1,6 +1,6 @@
 # ResearchPlatform Session Handoff (Complete)
 
-Last updated: 2026-03-01 (Europe/Vienna)
+Last updated: 2026-03-04 (Europe/Vienna)
 Repo root: `ResearchPlatform/`
 
 ## 0. Session Goal and What Was Discussed
@@ -11,7 +11,7 @@ In this session we:
 2. Converted analysis into a practical system roadmap.
 3. Locked project scope for `Research Platform v1`.
 4. Produced PRD/metrics/backlog structure in chat.
-5. Implemented `T-001` through `T-006` in code.
+5. Implemented `T-001` through `T-007` in code.
 6. Created and extended Notion architecture documentation.
 
 ---
@@ -137,7 +137,8 @@ Current execution status:
 - `T-004`: DONE
 - `T-005`: DONE
 - `T-006`: DONE
-- `T-007+`: NOT STARTED
+- `T-007`: DONE
+- `T-008+`: NOT STARTED
 
 ---
 
@@ -324,6 +325,47 @@ Validation:
 
 ---
 
+## 6.7 T-007 (DONE): Ingestion connector interface
+Implemented contract surface in `ResearchPlatform.Contracts`:
+- `src/Contracts/ResearchPlatform.Contracts/Abstractions/IProviderDataConnector.cs`
+- `src/Contracts/ResearchPlatform.Contracts/Ingestion/IngestionConnectorCapabilities.cs`
+- `src/Contracts/ResearchPlatform.Contracts/Ingestion/ProviderConstituentSnapshotRequest.cs`
+- `src/Contracts/ResearchPlatform.Contracts/Ingestion/ProviderConstituentRecord.cs`
+- `src/Contracts/ResearchPlatform.Contracts/Ingestion/ProviderConstituentSnapshotBatch.cs`
+- `src/Contracts/ResearchPlatform.Contracts/Ingestion/ProviderDailyPriceRequest.cs`
+- `src/Contracts/ResearchPlatform.Contracts/Ingestion/ProviderDailyPriceRecord.cs`
+- `src/Contracts/ResearchPlatform.Contracts/Ingestion/ProviderDailyPriceBatch.cs`
+- `src/Contracts/ResearchPlatform.Contracts/Ingestion/ProviderCorporateActionRequest.cs`
+- `src/Contracts/ResearchPlatform.Contracts/Ingestion/ProviderCorporateActionRecord.cs`
+- `src/Contracts/ResearchPlatform.Contracts/Ingestion/ProviderCorporateActionBatch.cs`
+
+Implemented DataIngestion connector factory and mock adapter:
+- `src/Modules/DataIngestion/Connectors/ProviderDataConnectorFactory.cs`
+- `src/Modules/DataIngestion/Connectors/Mock/MockProviderDataConnector.cs`
+
+Composition support:
+- Added `--connector-smoke` command in:
+  - `src/Composition/ResearchPlatform.App/Program.cs`
+
+Documentation:
+- `docs/ingestion-connectors.md`
+- updated `README.md`
+- updated `docs/next-session-prompt.md`
+
+Key behavior added:
+- provider-agnostic connector interface for constituent snapshots, daily prices, and corporate actions
+- standardized pagination metadata (`IsComplete`, `ContinuationToken`) in connector batches
+- capability declaration (`IngestionConnectorCapabilities`) to support provider feature checks
+- deterministic mock provider data for research-phase smoke validation
+
+Validation:
+- boundary check passes
+- JSON config validation passes
+- runtime config validation passes
+- `--connector-smoke` run confirms contract calls and payload counts
+
+---
+
 ## 7. Complete Project Structure (current)
 ```text
 ResearchPlatform/
@@ -338,6 +380,7 @@ ResearchPlatform/
   docs/
     configuration.md
     data-schema.md
+    ingestion-connectors.md
     module-boundaries.md
     next-session-prompt.md
     pit-constituents.md
@@ -364,9 +407,21 @@ ResearchPlatform/
       ResearchPlatform.Contracts/
         ResearchPlatform.Contracts.csproj
         Abstractions/
+          IProviderDataConnector.cs
           IIndexConstituentPitRepository.cs
           IModule.cs
           ISymbolIdentityRepository.cs
+        Ingestion/
+          IngestionConnectorCapabilities.cs
+          ProviderConstituentRecord.cs
+          ProviderConstituentSnapshotBatch.cs
+          ProviderConstituentSnapshotRequest.cs
+          ProviderCorporateActionBatch.cs
+          ProviderCorporateActionRecord.cs
+          ProviderCorporateActionRequest.cs
+          ProviderDailyPriceBatch.cs
+          ProviderDailyPriceRecord.cs
+          ProviderDailyPriceRequest.cs
         Symbols/
           AssetType.cs
           SymbolEnrichmentRequest.cs
@@ -389,6 +444,10 @@ ResearchPlatform/
       DataIngestion/
         DataIngestion.csproj
         DataIngestionModule.cs
+        Connectors/
+          ProviderDataConnectorFactory.cs
+          Mock/
+            MockProviderDataConnector.cs
       DataWarehouse/
         DataWarehouse.csproj
         DataWarehouseModule.cs
@@ -450,16 +509,16 @@ When continuing, do not revert unrelated parent-repo changes unless explicitly r
 ---
 
 ## 11. Immediate Next Work (recommended)
-1. Start `T-007` (ingestion connector interface).
-2. Then `T-008` (first provider adapter).
-3. Then `T-009` (corporate actions ingestion).
+1. Start `T-008` (first provider adapter).
+2. Then `T-009` (corporate actions ingestion persistence path).
+3. Then `T-010` (adjusted/unadjusted series generation).
 
-T-006 completion summary:
-- Added PIT constituent contracts and snapshots.
-- Added EF-backed PIT snapshot loader/query repository for SP500/SP100.
-- Added optional `--pit-smoke` command path in composition.
-- Added `docs/pit-constituents.md`.
-- Verified as-of membership and history window behavior.
+T-007 completion summary:
+- Added provider-agnostic ingestion connector contracts.
+- Added mock connector implementation and factory in `DataIngestion`.
+- Added optional `--connector-smoke` command path in composition.
+- Added `docs/ingestion-connectors.md`.
+- Verified connector contract flow via smoke run.
 
 ---
 
@@ -472,7 +531,7 @@ Use it directly to reload context in low-token sessions.
 ---
 
 ## 13. One-Paragraph Summary
-This session transformed thesis analysis into a concrete research-platform build path, locked scope (US equities, SP500/SP100, long-only, research-only), implemented architecture/config/CI foundations (`T-001` to `T-003`), established the canonical warehouse schema migration (`T-004`), completed symbol identity/mapping enrichment (`T-005`), and implemented the PIT constituent pipeline for SP500/SP100 (`T-006`). The project is now ready for ingestion connector abstractions (`T-007`).
+This session transformed thesis analysis into a concrete research-platform build path, locked scope (US equities, SP500/SP100, long-only, research-only), implemented architecture/config/CI foundations (`T-001` to `T-003`), established the canonical warehouse schema migration (`T-004`), completed symbol identity/mapping enrichment (`T-005`), implemented the PIT constituent pipeline for SP500/SP100 (`T-006`), and added provider-agnostic ingestion connector contracts with a mock adapter (`T-007`). The project is now ready for `T-008` (first production-grade provider adapter).
 
 ---
 
