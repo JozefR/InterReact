@@ -1,4 +1,4 @@
-# Ingestion Connector Contracts (T-007)
+# Ingestion Connectors (T-007, T-008)
 
 This document defines the provider-agnostic ingestion connector contract layer.
 
@@ -35,18 +35,31 @@ DTO families:
 - `ContinuationToken` and `IsComplete` support provider pagination semantics.
 - Payloads stay raw (provider symbols/action codes) so normalization can evolve independently.
 
-## Reference Implementation in DataIngestion
+## Implementations in DataIngestion
 
 `DataIngestion` now includes:
 
 - `Connectors/ProviderDataConnectorFactory.cs`
 - `Connectors/Mock/MockProviderDataConnector.cs`
+- `Connectors/Iex/IexProviderDataConnector.cs`
+- `Connectors/Iex/IexFixturePayloads.cs`
 
-The mock connector returns deterministic datasets for:
+`Mock` connector behavior:
 
 - SP500/SP100 constituent snapshots
 - business-day daily bars
 - sample corporate actions
+
+`IEX` connector behavior (first provider adapter in T-008):
+
+- parses IEX-shaped fixture payloads into contract DTOs
+- supports SP500/SP100 constituents with continuation token pagination (`page:<n>`)
+- supports filtered daily price pulls by symbol + date window
+- supports filtered corporate actions by symbol + date window
+
+Note:
+- Current IEX adapter is intentionally fixture-backed for deterministic research/dev validation.
+- Swapping fixture payloads for live HTTP transport is a follow-up evolution, not a contract change.
 
 ## Smoke Command
 
@@ -60,6 +73,13 @@ Expected output includes:
 
 - resolved provider connector
 - capabilities
-- constituent snapshot row count
+- constituent snapshot row count (and pagination state)
 - daily price row count
 - corporate action row count
+
+Run smoke against IEX profile (`Production` config currently points `DataIngestion.Provider` to `IEX`):
+
+```bash
+RP_ENVIRONMENT=Production \
+  dotnet run --project src/Composition/ResearchPlatform.App/ResearchPlatform.App.csproj -- --connector-smoke
+```

@@ -219,11 +219,24 @@ static async Task RunConnectorSmokeAsync(PlatformConfig config)
     var connector = ProviderDataConnectorFactory.Create(config.DataIngestion.Provider);
     var indexCode = config.DataIngestion.Universes.FirstOrDefault() ?? UniverseCodes.Sp500;
 
-    var constituentSnapshot = await connector.FetchConstituentSnapshotAsync(new ProviderConstituentSnapshotRequest(
+    var firstConstituentSnapshot = await connector.FetchConstituentSnapshotAsync(new ProviderConstituentSnapshotRequest(
         IndexCode: indexCode,
         EffectiveDate: new DateOnly(2026, 2, 15)));
 
-    var sampleSymbols = constituentSnapshot.Constituents
+    var allConstituents = firstConstituentSnapshot.Constituents.ToList();
+    ProviderConstituentSnapshotBatch? secondConstituentSnapshot = null;
+
+    if (!firstConstituentSnapshot.IsComplete && !string.IsNullOrWhiteSpace(firstConstituentSnapshot.ContinuationToken))
+    {
+        secondConstituentSnapshot = await connector.FetchConstituentSnapshotAsync(new ProviderConstituentSnapshotRequest(
+            IndexCode: indexCode,
+            EffectiveDate: firstConstituentSnapshot.EffectiveDate,
+            ContinuationToken: firstConstituentSnapshot.ContinuationToken));
+
+        allConstituents.AddRange(secondConstituentSnapshot.Constituents);
+    }
+
+    var sampleSymbols = allConstituents
         .Select(x => x.ProviderSymbol)
         .Take(3)
         .ToArray();
@@ -241,7 +254,12 @@ static async Task RunConnectorSmokeAsync(PlatformConfig config)
     Console.WriteLine("Connector smoke check completed.");
     Console.WriteLine($"- Provider: {connector.ProviderCode}");
     Console.WriteLine($"- Capabilities: index={connector.Capabilities.SupportsIndexConstituentSnapshots}, daily={connector.Capabilities.SupportsDailyPrices}, actions={connector.Capabilities.SupportsCorporateActions}");
-    Console.WriteLine($"- Universe snapshot: {constituentSnapshot.IndexCode} as-of {constituentSnapshot.EffectiveDate:yyyy-MM-dd} -> {constituentSnapshot.Constituents.Count} symbols");
+    Console.WriteLine($"- Universe snapshot page #1: {firstConstituentSnapshot.IndexCode} as-of {firstConstituentSnapshot.EffectiveDate:yyyy-MM-dd} -> {firstConstituentSnapshot.Constituents.Count} symbols, complete={firstConstituentSnapshot.IsComplete}, next={firstConstituentSnapshot.ContinuationToken ?? "<none>"}");
+    if (secondConstituentSnapshot is not null)
+    {
+        Console.WriteLine($"- Universe snapshot page #2: {secondConstituentSnapshot.Constituents.Count} symbols, complete={secondConstituentSnapshot.IsComplete}, next={secondConstituentSnapshot.ContinuationToken ?? "<none>"}");
+    }
+    Console.WriteLine($"- Universe snapshot combined symbols: {allConstituents.Count}");
     Console.WriteLine($"- Daily prices fetched: {prices.Prices.Count} rows ({prices.FromDate:yyyy-MM-dd}..{prices.ToDate:yyyy-MM-dd})");
     Console.WriteLine($"- Corporate actions fetched: {actions.Actions.Count} rows ({actions.FromDate:yyyy-MM-dd}..{actions.ToDate:yyyy-MM-dd})");
     Console.WriteLine($"- Sample symbols: {string.Join(", ", sampleSymbols)}");

@@ -130,16 +130,24 @@ Optional smoke run:
 dotnet run --project src/Composition/ResearchPlatform.App/ResearchPlatform.App.csproj -- --pit-smoke
 ```
 
-## Ingestion Connectors (T-007)
+## Ingestion Connectors (T-007, T-008)
 
-Provider-agnostic ingestion connector contract and mock implementation:
+Provider-agnostic ingestion connector contract with two adapters:
 
 - contracts: `src/Contracts/ResearchPlatform.Contracts/Abstractions/IProviderDataConnector.cs`
 - mock connector: `src/Modules/DataIngestion/Connectors/Mock/MockProviderDataConnector.cs`
+- first provider adapter: `src/Modules/DataIngestion/Connectors/Iex/IexProviderDataConnector.cs`
 - details: `docs/ingestion-connectors.md`
 
 Optional smoke run:
 
 ```bash
 dotnet run --project src/Composition/ResearchPlatform.App/ResearchPlatform.App.csproj -- --connector-smoke
+```
+
+Run connector smoke with `IEX` provider profile:
+
+```bash
+RP_ENVIRONMENT=Production \
+  dotnet run --project src/Composition/ResearchPlatform.App/ResearchPlatform.App.csproj -- --connector-smoke
 ```

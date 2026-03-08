@@ -9,8 +9,8 @@ Load project context from:
 - ./docs/configuration.md
 
 Current objective:
-- Continue ResearchPlatform build from completed T-001, T-002, T-003, T-004, T-005, T-006, and T-007.
-- Start with T-008 (first provider adapter).
+- Continue ResearchPlatform build from completed T-001, T-002, T-003, T-004, T-005, T-006, T-007, and T-008.
+- Start with T-009 (corporate actions ingestion persistence path).
 
 Constraints:
 - Keep module boundaries strict (modules reference contracts only).
@@ -22,5 +22,5 @@ Before coding, run:
 - ./scripts/validate-config-json.sh
 - ./scripts/validate-config.sh
 
-Then propose and implement T-008 end-to-end.
+Then propose and implement T-009 end-to-end.
 ```

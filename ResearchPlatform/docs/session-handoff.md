@@ -1,6 +1,6 @@
 # ResearchPlatform Session Handoff (Complete)
 
-Last updated: 2026-03-04 (Europe/Vienna)
+Last updated: 2026-03-06 (Europe/Vienna)
 Repo root: `ResearchPlatform/`
 
 ## 0. Session Goal and What Was Discussed
@@ -11,7 +11,7 @@ In this session we:
 2. Converted analysis into a practical system roadmap.
 3. Locked project scope for `Research Platform v1`.
 4. Produced PRD/metrics/backlog structure in chat.
-5. Implemented `T-001` through `T-007` in code.
+5. Implemented `T-001` through `T-008` in code.
 6. Created and extended Notion architecture documentation.
 
 ---
@@ -138,7 +138,8 @@ Current execution status:
 - `T-005`: DONE
 - `T-006`: DONE
 - `T-007`: DONE
-- `T-008+`: NOT STARTED
+- `T-008`: DONE
+- `T-009+`: NOT STARTED
 
 ---
 
@@ -366,6 +367,39 @@ Validation:
 
 ---
 
+## 6.8 T-008 (DONE): First provider adapter (`IEX`)
+Implemented DataIngestion provider adapter:
+- `src/Modules/DataIngestion/Connectors/Iex/IexProviderDataConnector.cs`
+- `src/Modules/DataIngestion/Connectors/Iex/IexFixturePayloads.cs`
+
+Factory wiring update:
+- `src/Modules/DataIngestion/Connectors/ProviderDataConnectorFactory.cs`
+  - added `IEX` connector registration
+
+Composition support updates:
+- enhanced `--connector-smoke` flow in:
+  - `src/Composition/ResearchPlatform.App/Program.cs`
+  - now exercises constituent pagination when connector returns a continuation token
+
+Documentation updates:
+- `docs/ingestion-connectors.md`
+- `README.md`
+- `docs/next-session-prompt.md`
+
+Key behavior added:
+- first non-mock provider adapter (`IEX`) implementing `IProviderDataConnector`
+- provider-shaped payload parsing mapped into neutral connector DTOs
+- constituent snapshot pagination using `ContinuationToken` format `page:<n>`
+- filtered daily price and corporate action fetch by symbol/date windows
+- fail-fast request validation (date ranges, symbol count, continuation token shape)
+
+Validation:
+- boundary/config checks pass
+- build/test pass with warnings-as-errors
+- `--connector-smoke` passes in both `Mock` and `IEX` provider profiles
+
+---
+
 ## 7. Complete Project Structure (current)
 ```text
 ResearchPlatform/
@@ -446,6 +480,9 @@ ResearchPlatform/
         DataIngestionModule.cs
         Connectors/
           ProviderDataConnectorFactory.cs
+          Iex/
+            IexFixturePayloads.cs
+            IexProviderDataConnector.cs
           Mock/
             MockProviderDataConnector.cs
       DataWarehouse/
@@ -509,16 +546,16 @@ When continuing, do not revert unrelated parent-repo changes unless explicitly r
 ---
 
 ## 11. Immediate Next Work (recommended)
-1. Start `T-008` (first provider adapter).
-2. Then `T-009` (corporate actions ingestion persistence path).
-3. Then `T-010` (adjusted/unadjusted series generation).
+1. Start `T-009` (corporate actions ingestion persistence path).
+2. Then `T-010` (adjusted/unadjusted series generation).
+3. Then `T-011` (data QA suite).
 
-T-007 completion summary:
-- Added provider-agnostic ingestion connector contracts.
-- Added mock connector implementation and factory in `DataIngestion`.
-- Added optional `--connector-smoke` command path in composition.
-- Added `docs/ingestion-connectors.md`.
-- Verified connector contract flow via smoke run.
+T-008 completion summary:
+- Added first provider adapter (`IEX`) in `DataIngestion`.
+- Added provider-shaped fixture payload parsing mapped to connector DTOs.
+- Added constituent pagination behavior with continuation tokens.
+- Updated connector smoke flow to exercise paginated paths.
+- Verified connector flow for both `Mock` and `IEX`.
 
 ---
 
@@ -531,7 +568,7 @@ Use it directly to reload context in low-token sessions.
 ---
 
 ## 13. One-Paragraph Summary
-This session transformed thesis analysis into a concrete research-platform build path, locked scope (US equities, SP500/SP100, long-only, research-only), implemented architecture/config/CI foundations (`T-001` to `T-003`), established the canonical warehouse schema migration (`T-004`), completed symbol identity/mapping enrichment (`T-005`), implemented the PIT constituent pipeline for SP500/SP100 (`T-006`), and added provider-agnostic ingestion connector contracts with a mock adapter (`T-007`). The project is now ready for `T-008` (first production-grade provider adapter).
+This session transformed thesis analysis into a concrete research-platform build path, locked scope (US equities, SP500/SP100, long-only, research-only), implemented architecture/config/CI foundations (`T-001` to `T-003`), established the canonical warehouse schema migration (`T-004`), completed symbol identity/mapping enrichment (`T-005`), implemented the PIT constituent pipeline for SP500/SP100 (`T-006`), added provider-agnostic ingestion connector contracts (`T-007`), and completed the first non-mock provider adapter (`T-008`, IEX fixture-backed). The project is now ready for `T-009` (corporate actions ingestion persistence path).
 
 ---
 
