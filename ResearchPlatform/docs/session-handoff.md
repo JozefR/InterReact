@@ -367,19 +367,19 @@ Validation:
 
 ---
 
-## 6.8 T-008 (DONE): First provider adapter (`IEX`)
+## 6.8 T-008 (DONE): First provider adapter (`Massive` EOD)
 Implemented DataIngestion provider adapter:
-- `src/Modules/DataIngestion/Connectors/Iex/IexProviderDataConnector.cs`
-- `src/Modules/DataIngestion/Connectors/Iex/IexFixturePayloads.cs`
+- `src/Modules/DataIngestion/Connectors/Massive/MassiveEodProviderDataConnector.cs`
+- `src/Modules/DataIngestion/Connectors/Massive/MassiveFixturePayloads.cs`
 
 Factory wiring update:
 - `src/Modules/DataIngestion/Connectors/ProviderDataConnectorFactory.cs`
-  - added `IEX` connector registration
+  - added `MASSIVE` connector registration
 
 Composition support updates:
 - enhanced `--connector-smoke` flow in:
   - `src/Composition/ResearchPlatform.App/Program.cs`
-  - now exercises constituent pagination when connector returns a continuation token
+  - now handles connectors with different capability sets (constituents/daily/corporate actions)
 
 Documentation updates:
 - `docs/ingestion-connectors.md`
@@ -387,16 +387,16 @@ Documentation updates:
 - `docs/next-session-prompt.md`
 
 Key behavior added:
-- first non-mock provider adapter (`IEX`) implementing `IProviderDataConnector`
-- provider-shaped payload parsing mapped into neutral connector DTOs
-- constituent snapshot pagination using `ContinuationToken` format `page:<n>`
-- filtered daily price and corporate action fetch by symbol/date windows
-- fail-fast request validation (date ranges, symbol count, continuation token shape)
+- first non-mock provider adapter (`MASSIVE`) implementing `IProviderDataConnector`
+- Massive EOD aggregate endpoint integration with provider-shaped response mapping to connector DTOs
+- capability-aware smoke behavior for connectors that do not support constituents/corporate actions yet
+- fixture fallback mode for deterministic local validation when API key is missing
+- fail-fast request validation (date ranges, symbol count, API config)
 
 Validation:
 - boundary/config checks pass
 - build/test pass with warnings-as-errors
-- `--connector-smoke` passes in both `Mock` and `IEX` provider profiles
+- `--connector-smoke` passes in both `Mock` and `Massive` provider profiles
 
 ---
 
@@ -480,9 +480,9 @@ ResearchPlatform/
         DataIngestionModule.cs
         Connectors/
           ProviderDataConnectorFactory.cs
-          Iex/
-            IexFixturePayloads.cs
-            IexProviderDataConnector.cs
+          Massive/
+            MassiveFixturePayloads.cs
+            MassiveEodProviderDataConnector.cs
           Mock/
             MockProviderDataConnector.cs
       DataWarehouse/
@@ -551,11 +551,11 @@ When continuing, do not revert unrelated parent-repo changes unless explicitly r
 3. Then `T-011` (data QA suite).
 
 T-008 completion summary:
-- Added first provider adapter (`IEX`) in `DataIngestion`.
-- Added provider-shaped fixture payload parsing mapped to connector DTOs.
-- Added constituent pagination behavior with continuation tokens.
-- Updated connector smoke flow to exercise paginated paths.
-- Verified connector flow for both `Mock` and `IEX`.
+- Added first provider adapter (`Massive` EOD) in `DataIngestion`.
+- Added Massive aggregate response parsing for daily bars.
+- Added fixture fallback mode for offline/dev usage.
+- Updated connector smoke flow to respect connector capabilities.
+- Verified connector flow for both `Mock` and `Massive`.
 
 ---
 
@@ -568,7 +568,7 @@ Use it directly to reload context in low-token sessions.
 ---
 
 ## 13. One-Paragraph Summary
-This session transformed thesis analysis into a concrete research-platform build path, locked scope (US equities, SP500/SP100, long-only, research-only), implemented architecture/config/CI foundations (`T-001` to `T-003`), established the canonical warehouse schema migration (`T-004`), completed symbol identity/mapping enrichment (`T-005`), implemented the PIT constituent pipeline for SP500/SP100 (`T-006`), added provider-agnostic ingestion connector contracts (`T-007`), and completed the first non-mock provider adapter (`T-008`, IEX fixture-backed). The project is now ready for `T-009` (corporate actions ingestion persistence path).
+This session transformed thesis analysis into a concrete research-platform build path, locked scope (US equities, SP500/SP100, long-only, research-only), implemented architecture/config/CI foundations (`T-001` to `T-003`), established the canonical warehouse schema migration (`T-004`), completed symbol identity/mapping enrichment (`T-005`), implemented the PIT constituent pipeline for SP500/SP100 (`T-006`), added provider-agnostic ingestion connector contracts (`T-007`), and completed the first non-mock provider adapter (`T-008`, Massive EOD). The project is now ready for `T-009` (corporate actions ingestion persistence path).
 
 ---
 

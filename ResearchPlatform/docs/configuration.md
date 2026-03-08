@@ -29,6 +29,9 @@ Examples:
 - `RP__DataWarehouse__ConnectionString=Server=...`
 - `RP__Backtest__InitialCapital=75000`
 - `RP__DataIngestion__Universes=SP500,SP100`
+- `RP__DataIngestion__Provider=Massive`
+- `RP__DataIngestion__MassiveApiKey=your_api_key`
+- `RP__DataIngestion__MassiveUseFixtureFallbackWhenApiKeyMissing=false`
 
 Comma-separated values are parsed as arrays.
 

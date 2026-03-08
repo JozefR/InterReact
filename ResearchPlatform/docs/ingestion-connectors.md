@@ -41,8 +41,8 @@ DTO families:
 
 - `Connectors/ProviderDataConnectorFactory.cs`
 - `Connectors/Mock/MockProviderDataConnector.cs`
-- `Connectors/Iex/IexProviderDataConnector.cs`
-- `Connectors/Iex/IexFixturePayloads.cs`
+- `Connectors/Massive/MassiveEodProviderDataConnector.cs`
+- `Connectors/Massive/MassiveFixturePayloads.cs`
 
 `Mock` connector behavior:
 
@@ -50,16 +50,17 @@ DTO families:
 - business-day daily bars
 - sample corporate actions
 
-`IEX` connector behavior (first provider adapter in T-008):
+`Massive` connector behavior (current first production-focused adapter):
 
-- parses IEX-shaped fixture payloads into contract DTOs
-- supports SP500/SP100 constituents with continuation token pagination (`page:<n>`)
+- uses Massive Stocks API aggregate bars endpoint for EOD pulls:
+  - `/v2/aggs/ticker/{ticker}/range/1/day/{from}/{to}`
 - supports filtered daily price pulls by symbol + date window
-- supports filtered corporate actions by symbol + date window
+- supports fixture fallback when API key is missing (deterministic local validation)
+- does not implement constituents or corporate actions yet in phase 1
 
 Note:
-- Current IEX adapter is intentionally fixture-backed for deterministic research/dev validation.
-- Swapping fixture payloads for live HTTP transport is a follow-up evolution, not a contract change.
+- Massive connector is EOD-focused in this phase and intentionally capability-limited.
+- Corporate actions support is planned in `T-009`.
 
 ## Smoke Command
 
@@ -77,7 +78,7 @@ Expected output includes:
 - daily price row count
 - corporate action row count
 
-Run smoke against IEX profile (`Production` config currently points `DataIngestion.Provider` to `IEX`):
+Run smoke against Massive profile (`Production` config currently points `DataIngestion.Provider` to `Massive`):
 
 ```bash
 RP_ENVIRONMENT=Production \

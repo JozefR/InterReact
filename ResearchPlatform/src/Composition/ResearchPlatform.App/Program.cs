@@ -216,24 +216,36 @@ static async Task RunPitConstituentSmokeAsync(PlatformConfig config)
 
 static async Task RunConnectorSmokeAsync(PlatformConfig config)
 {
-    var connector = ProviderDataConnectorFactory.Create(config.DataIngestion.Provider);
+    var connector = ProviderDataConnectorFactory.Create(
+        config.DataIngestion.Provider,
+        new ProviderDataConnectorFactoryOptions(
+            RequestTimeoutSeconds: config.DataIngestion.RequestTimeoutSeconds,
+            MassiveApiBaseUrl: config.DataIngestion.MassiveApiBaseUrl,
+            MassiveApiKey: config.DataIngestion.MassiveApiKey,
+            MassiveUseFixtureFallbackWhenApiKeyMissing: config.DataIngestion.MassiveUseFixtureFallbackWhenApiKeyMissing));
+
     var indexCode = config.DataIngestion.Universes.FirstOrDefault() ?? UniverseCodes.Sp500;
-
-    var firstConstituentSnapshot = await connector.FetchConstituentSnapshotAsync(new ProviderConstituentSnapshotRequest(
-        IndexCode: indexCode,
-        EffectiveDate: new DateOnly(2026, 2, 15)));
-
-    var allConstituents = firstConstituentSnapshot.Constituents.ToList();
+    ProviderConstituentSnapshotBatch? firstConstituentSnapshot = null;
     ProviderConstituentSnapshotBatch? secondConstituentSnapshot = null;
+    var allConstituents = new List<ProviderConstituentRecord>();
 
-    if (!firstConstituentSnapshot.IsComplete && !string.IsNullOrWhiteSpace(firstConstituentSnapshot.ContinuationToken))
+    if (connector.Capabilities.SupportsIndexConstituentSnapshots)
     {
-        secondConstituentSnapshot = await connector.FetchConstituentSnapshotAsync(new ProviderConstituentSnapshotRequest(
+        firstConstituentSnapshot = await connector.FetchConstituentSnapshotAsync(new ProviderConstituentSnapshotRequest(
             IndexCode: indexCode,
-            EffectiveDate: firstConstituentSnapshot.EffectiveDate,
-            ContinuationToken: firstConstituentSnapshot.ContinuationToken));
+            EffectiveDate: new DateOnly(2026, 2, 15)));
 
-        allConstituents.AddRange(secondConstituentSnapshot.Constituents);
+        allConstituents.AddRange(firstConstituentSnapshot.Constituents);
+
+        if (!firstConstituentSnapshot.IsComplete && !string.IsNullOrWhiteSpace(firstConstituentSnapshot.ContinuationToken))
+        {
+            secondConstituentSnapshot = await connector.FetchConstituentSnapshotAsync(new ProviderConstituentSnapshotRequest(
+                IndexCode: indexCode,
+                EffectiveDate: firstConstituentSnapshot.EffectiveDate,
+                ContinuationToken: firstConstituentSnapshot.ContinuationToken));
+
+            allConstituents.AddRange(secondConstituentSnapshot.Constituents);
+        }
     }
 
     var sampleSymbols = allConstituents
@@ -241,27 +253,69 @@ static async Task RunConnectorSmokeAsync(PlatformConfig config)
         .Take(3)
         .ToArray();
 
-    var prices = await connector.FetchDailyPricesAsync(new ProviderDailyPriceRequest(
-        ProviderSymbols: sampleSymbols,
-        FromDate: new DateOnly(2026, 2, 10),
-        ToDate: new DateOnly(2026, 2, 20)));
+    if (sampleSymbols.Length == 0)
+    {
+        sampleSymbols = ["AAPL", "MSFT", "NVDA"];
+    }
 
-    var actions = await connector.FetchCorporateActionsAsync(new ProviderCorporateActionRequest(
-        ProviderSymbols: sampleSymbols,
-        FromDate: new DateOnly(2026, 2, 1),
-        ToDate: new DateOnly(2026, 2, 28)));
+    ProviderDailyPriceBatch? prices = null;
+    if (connector.Capabilities.SupportsDailyPrices)
+    {
+        prices = await connector.FetchDailyPricesAsync(new ProviderDailyPriceRequest(
+            ProviderSymbols: sampleSymbols,
+            FromDate: new DateOnly(2026, 2, 10),
+            ToDate: new DateOnly(2026, 2, 20)));
+    }
+
+    ProviderCorporateActionBatch? actions = null;
+    if (connector.Capabilities.SupportsCorporateActions)
+    {
+        actions = await connector.FetchCorporateActionsAsync(new ProviderCorporateActionRequest(
+            ProviderSymbols: sampleSymbols,
+            FromDate: new DateOnly(2026, 2, 1),
+            ToDate: new DateOnly(2026, 2, 28)));
+    }
 
     Console.WriteLine("Connector smoke check completed.");
     Console.WriteLine($"- Provider: {connector.ProviderCode}");
     Console.WriteLine($"- Capabilities: index={connector.Capabilities.SupportsIndexConstituentSnapshots}, daily={connector.Capabilities.SupportsDailyPrices}, actions={connector.Capabilities.SupportsCorporateActions}");
-    Console.WriteLine($"- Universe snapshot page #1: {firstConstituentSnapshot.IndexCode} as-of {firstConstituentSnapshot.EffectiveDate:yyyy-MM-dd} -> {firstConstituentSnapshot.Constituents.Count} symbols, complete={firstConstituentSnapshot.IsComplete}, next={firstConstituentSnapshot.ContinuationToken ?? "<none>"}");
+    if (connector.ProviderCode.Equals("MASSIVE", StringComparison.OrdinalIgnoreCase))
+    {
+        Console.WriteLine($"- Massive config: api_base={config.DataIngestion.MassiveApiBaseUrl}, has_api_key={!string.IsNullOrWhiteSpace(config.DataIngestion.MassiveApiKey)}, fixture_fallback_if_missing_key={config.DataIngestion.MassiveUseFixtureFallbackWhenApiKeyMissing}");
+    }
+    if (firstConstituentSnapshot is not null)
+    {
+        Console.WriteLine($"- Universe snapshot page #1: {firstConstituentSnapshot.IndexCode} as-of {firstConstituentSnapshot.EffectiveDate:yyyy-MM-dd} -> {firstConstituentSnapshot.Constituents.Count} symbols, complete={firstConstituentSnapshot.IsComplete}, next={firstConstituentSnapshot.ContinuationToken ?? "<none>"}");
+    }
+    else
+    {
+        Console.WriteLine("- Universe snapshot: <not supported by connector>");
+    }
+
     if (secondConstituentSnapshot is not null)
     {
         Console.WriteLine($"- Universe snapshot page #2: {secondConstituentSnapshot.Constituents.Count} symbols, complete={secondConstituentSnapshot.IsComplete}, next={secondConstituentSnapshot.ContinuationToken ?? "<none>"}");
     }
+
     Console.WriteLine($"- Universe snapshot combined symbols: {allConstituents.Count}");
-    Console.WriteLine($"- Daily prices fetched: {prices.Prices.Count} rows ({prices.FromDate:yyyy-MM-dd}..{prices.ToDate:yyyy-MM-dd})");
-    Console.WriteLine($"- Corporate actions fetched: {actions.Actions.Count} rows ({actions.FromDate:yyyy-MM-dd}..{actions.ToDate:yyyy-MM-dd})");
+    if (prices is not null)
+    {
+        Console.WriteLine($"- Daily prices fetched: {prices.Prices.Count} rows ({prices.FromDate:yyyy-MM-dd}..{prices.ToDate:yyyy-MM-dd})");
+    }
+    else
+    {
+        Console.WriteLine("- Daily prices: <not supported by connector>");
+    }
+
+    if (actions is not null)
+    {
+        Console.WriteLine($"- Corporate actions fetched: {actions.Actions.Count} rows ({actions.FromDate:yyyy-MM-dd}..{actions.ToDate:yyyy-MM-dd})");
+    }
+    else
+    {
+        Console.WriteLine("- Corporate actions: <not supported by connector>");
+    }
+
     Console.WriteLine($"- Sample symbols: {string.Join(", ", sampleSymbols)}");
 }
 

@@ -5,5 +5,5 @@ namespace DataIngestion;
 public sealed class DataIngestionModule : IModule
 {
     public string Name => "DataIngestion";
-    public string Description => "Provider connector implementations (Mock/IEX), pull orchestration, and raw market data ingestion.";
+    public string Description => "Provider connector implementations (Mock/Massive), pull orchestration, and raw market data ingestion.";
 }

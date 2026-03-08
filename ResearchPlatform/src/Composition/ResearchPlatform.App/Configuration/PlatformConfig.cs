@@ -185,6 +185,12 @@ public sealed class PlatformConfig
             issues.Add("DataIngestion.RequestTimeoutSeconds must be greater than 0.");
         }
 
+        if (config.DataIngestion.Provider.Equals("Massive", StringComparison.OrdinalIgnoreCase) &&
+            string.IsNullOrWhiteSpace(config.DataIngestion.MassiveApiBaseUrl))
+        {
+            issues.Add("DataIngestion.MassiveApiBaseUrl must not be empty when Provider is Massive.");
+        }
+
         if (string.IsNullOrWhiteSpace(config.DataWarehouse.ConnectionString))
         {
             issues.Add("DataWarehouse.ConnectionString must not be empty.");
@@ -240,6 +246,9 @@ public sealed class DataIngestionConfig
     public List<string> Universes { get; set; } = ["SP500", "SP100"];
     public bool EnableDailyRefresh { get; set; } = true;
     public int RequestTimeoutSeconds { get; set; } = 30;
+    public string MassiveApiBaseUrl { get; set; } = "https://api.massive.com";
+    public string? MassiveApiKey { get; set; }
+    public bool MassiveUseFixtureFallbackWhenApiKeyMissing { get; set; } = true;
 }
 
 public sealed class DataWarehouseConfig

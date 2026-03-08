@@ -136,7 +136,7 @@ Provider-agnostic ingestion connector contract with two adapters:
 
 - contracts: `src/Contracts/ResearchPlatform.Contracts/Abstractions/IProviderDataConnector.cs`
 - mock connector: `src/Modules/DataIngestion/Connectors/Mock/MockProviderDataConnector.cs`
-- first provider adapter: `src/Modules/DataIngestion/Connectors/Iex/IexProviderDataConnector.cs`
+- Massive EOD connector: `src/Modules/DataIngestion/Connectors/Massive/MassiveEodProviderDataConnector.cs`
 - details: `docs/ingestion-connectors.md`
 
 Optional smoke run:
@@ -145,7 +145,7 @@ Optional smoke run:
 dotnet run --project src/Composition/ResearchPlatform.App/ResearchPlatform.App.csproj -- --connector-smoke
 ```
 
-Run connector smoke with `IEX` provider profile:
+Run connector smoke with `Massive` provider profile:
 
 ```bash
 RP_ENVIRONMENT=Production \
