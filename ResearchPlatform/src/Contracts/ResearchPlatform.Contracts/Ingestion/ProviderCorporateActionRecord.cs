@@ -8,4 +8,6 @@ public sealed record ProviderCorporateActionRecord(
     string? Currency = null,
     string? ExternalId = null,
     string? Description = null,
-    string? RelatedProviderSymbol = null);
+    string? RelatedProviderSymbol = null,
+    decimal? AdjustmentFactor = null,
+    string? AttributesJson = null);

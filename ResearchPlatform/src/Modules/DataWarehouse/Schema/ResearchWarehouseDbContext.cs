@@ -125,18 +125,27 @@ public sealed class ResearchWarehouseDbContext(DbContextOptions<ResearchWarehous
 
         e.Property(x => x.ActionType).HasConversion<string>().HasMaxLength(32).IsRequired();
         e.Property(x => x.Value).HasPrecision(18, 8).IsRequired();
+        e.Property(x => x.AdjustmentFactor).HasPrecision(18, 8);
         e.Property(x => x.Currency).HasMaxLength(8);
         e.Property(x => x.Provider).HasMaxLength(64).IsRequired();
         e.Property(x => x.ExternalId).HasMaxLength(128);
         e.Property(x => x.Description).HasMaxLength(512);
+        e.Property(x => x.RelatedProviderSymbol).HasMaxLength(64);
+        e.Property(x => x.AttributesJson).HasMaxLength(4000);
 
         e.HasIndex(x => new { x.SymbolMasterId, x.ActionDate, x.ActionType, x.Provider, x.Value }).IsUnique();
         e.HasIndex(x => new { x.SymbolMasterId, x.ActionDate });
+        e.HasIndex(x => x.IngestionRunId);
 
         e.HasOne(x => x.SymbolMaster)
             .WithMany(x => x.CorporateActions)
             .HasForeignKey(x => x.SymbolMasterId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        e.HasOne(x => x.IngestionRun)
+            .WithMany(x => x.CorporateActions)
+            .HasForeignKey(x => x.IngestionRunId)
+            .OnDelete(DeleteBehavior.SetNull);
     }
 
     private static void ConfigurePriceDailyAdjusted(EntityTypeBuilder<PriceDailyAdjusted> e)

@@ -1,13 +1,16 @@
 # Canonical Data Schema (T-004)
 
-This document describes the initial warehouse schema and migration baseline for research workloads.
+This document describes the current warehouse schema baseline for research workloads.
 
 ## Migration Baseline
 
-- EF migration: `InitialCanonicalSchema`
+- EF migrations:
+  - `InitialCanonicalSchema`
+  - `AddCorporateActionAuditColumns`
 - Context: `DataWarehouse.Schema.ResearchWarehouseDbContext`
 - Migration files:
   - `src/Modules/DataWarehouse/Schema/Migrations/20260301131711_InitialCanonicalSchema.cs`
+  - `src/Modules/DataWarehouse/Schema/Migrations/20260317125628_AddCorporateActionAuditColumns.cs`
   - `src/Modules/DataWarehouse/Schema/Migrations/ResearchWarehouseDbContextModelSnapshot.cs`
 
 ## Entity Relationship Overview
@@ -31,6 +34,7 @@ graph TD
 
   RAW --> IR
   ADJ --> IR
+  CA --> IR
   QA --> IR
 ```
 
@@ -92,7 +96,10 @@ Key columns:
 - `Id` (PK)
 - `SymbolMasterId` (FK)
 - `ActionDate`, `ActionType`, `Value`
+- `AdjustmentFactor`
 - `Currency`, `Provider`, `ExternalId`, `Description`
+- `RelatedProviderSymbol`, `AttributesJson`
+- `IngestionRunId` (nullable FK)
 
 Key constraints/indexes:
 - Unique: `(SymbolMasterId, ActionDate, ActionType, Provider, Value)`
@@ -151,3 +158,4 @@ export RP__DataWarehouse__ConnectionString="Data Source=researchplatform.db"
 - Constraints are intentionally strict to fail fast on invalid market data.
 - `T-005` added repository-level symbol master/mapping enrichment over this schema.
 - `T-006` added PIT constituent snapshot loading/query access patterns for SP500/SP100 on top of this baseline.
+- `T-009` extended `corporate_actions` with run audit linkage and provider metadata preservation for later adjustment work.

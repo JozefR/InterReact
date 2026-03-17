@@ -19,6 +19,7 @@ public sealed class IngestionRun
     public string? ErrorMessage { get; set; }
 
     public List<PriceDailyRaw> RawPrices { get; set; } = [];
+    public List<CorporateAction> CorporateActions { get; set; } = [];
     public List<PriceDailyAdjusted> AdjustedPrices { get; set; } = [];
     public List<QaResult> QaResults { get; set; } = [];
 }

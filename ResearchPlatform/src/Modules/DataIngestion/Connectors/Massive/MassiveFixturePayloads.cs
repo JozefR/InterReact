@@ -75,4 +75,59 @@ internal static class MassiveFixturePayloads
     };
 
     public static readonly string[] DefaultConstituentSymbols = ["AAPL", "MSFT", "NVDA", "AMZN"];
+
+    public const string Dividends = """
+{
+  "request_id": "fixture-dividends",
+  "results": [
+    {
+      "cash_amount": 0.81,
+      "currency": "USD",
+      "declaration_date": "2026-02-01",
+      "distribution_type": "recurring",
+      "ex_dividend_date": "2026-02-19",
+      "frequency": 4,
+      "historical_adjustment_factor": 0.998200,
+      "id": "MSFT-20260219-DIV",
+      "pay_date": "2026-03-12",
+      "record_date": "2026-02-20",
+      "split_adjusted_cash_amount": 0.81,
+      "ticker": "MSFT"
+    },
+    {
+      "cash_amount": 1.25,
+      "currency": "USD",
+      "declaration_date": "2026-02-12",
+      "distribution_type": "special",
+      "ex_dividend_date": "2026-02-24",
+      "frequency": 0,
+      "historical_adjustment_factor": 0.994700,
+      "id": "AMZN-20260224-SPDIV",
+      "pay_date": "2026-03-03",
+      "record_date": "2026-02-25",
+      "split_adjusted_cash_amount": 1.25,
+      "ticker": "AMZN"
+    }
+  ],
+  "status": "OK"
+}
+""";
+
+    public const string Splits = """
+{
+  "request_id": "fixture-splits",
+  "results": [
+    {
+      "adjustment_type": "forward_split",
+      "execution_date": "2026-02-16",
+      "historical_adjustment_factor": 0.500000,
+      "id": "AAPL-20260216-SPLIT",
+      "split_from": 1,
+      "split_to": 2,
+      "ticker": "AAPL"
+    }
+  ],
+  "status": "OK"
+}
+""";
 }

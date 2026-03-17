@@ -139,7 +139,8 @@ Current execution status:
 - `T-006`: DONE
 - `T-007`: DONE
 - `T-008`: DONE
-- `T-009+`: NOT STARTED
+- `T-009`: DONE
+- `T-010+`: NOT STARTED
 
 ---
 
@@ -400,6 +401,56 @@ Validation:
 
 ---
 
+## 6.9 T-009 (DONE): Corporate actions ingestion persistence path
+Implemented contract + persistence seam:
+- `src/Contracts/ResearchPlatform.Contracts/Abstractions/ICorporateActionRepository.cs`
+- `src/Contracts/ResearchPlatform.Contracts/CorporateActions/CorporateActionLoadRequest.cs`
+- `src/Contracts/ResearchPlatform.Contracts/CorporateActions/CorporateActionLoadResult.cs`
+- `src/Contracts/ResearchPlatform.Contracts/CorporateActions/CorporateActionSnapshot.cs`
+
+Warehouse implementation:
+- `src/Modules/DataWarehouse/CorporateActions/EfCorporateActionRepository.cs`
+- `src/Modules/DataWarehouse/CorporateActions/SqliteCorporateActionRepositoryFactory.cs`
+
+Schema and migration updates:
+- `src/Modules/DataWarehouse/Schema/Entities/CorporateAction.cs`
+- `src/Modules/DataWarehouse/Schema/Entities/IngestionRun.cs`
+- `src/Modules/DataWarehouse/Schema/ResearchWarehouseDbContext.cs`
+- `src/Modules/DataWarehouse/Schema/Migrations/20260317125628_AddCorporateActionAuditColumns.cs`
+
+Connector updates:
+- `src/Modules/DataIngestion/Connectors/Massive/MassiveEodProviderDataConnector.cs`
+- `src/Modules/DataIngestion/Connectors/Massive/MassiveFixturePayloads.cs`
+  - Massive now supports:
+    - `/stocks/v1/dividends`
+    - `/stocks/v1/splits`
+
+Composition support:
+- `src/Composition/ResearchPlatform.App/Program.cs`
+  - added `--corporate-actions-smoke`
+
+Documentation updates:
+- `docs/ingestion-connectors.md`
+- `docs/corporate-actions-ingestion.md`
+- `docs/data-schema.md`
+- `README.md`
+- `docs/next-session-prompt.md`
+
+Key behavior added:
+- ingestion-run audit row per corporate-action load
+- provider-symbol resolution through canonical symbol mappings on action date
+- upsert by provider external id when available, otherwise by natural key
+- Massive corporate-action parsing with raw provider metadata preserved in `AttributesJson`
+- deterministic smoke coverage for both `Mock` and `Massive` fixture mode
+
+Validation:
+- boundary/config checks pass
+- build/test pass with warnings-as-errors
+- `--connector-smoke` passes in `Massive` fixture mode with corporate actions enabled
+- `--corporate-actions-smoke` passes in both `Mock` and `Massive` provider profiles
+
+---
+
 ## 7. Complete Project Structure (current)
 ```text
 ResearchPlatform/
@@ -413,6 +464,7 @@ ResearchPlatform/
   ResearchPlatform.sln
   docs/
     configuration.md
+    corporate-actions-ingestion.md
     data-schema.md
     ingestion-connectors.md
     module-boundaries.md
@@ -441,10 +493,15 @@ ResearchPlatform/
       ResearchPlatform.Contracts/
         ResearchPlatform.Contracts.csproj
         Abstractions/
+          ICorporateActionRepository.cs
           IProviderDataConnector.cs
           IIndexConstituentPitRepository.cs
           IModule.cs
           ISymbolIdentityRepository.cs
+        CorporateActions/
+          CorporateActionLoadRequest.cs
+          CorporateActionLoadResult.cs
+          CorporateActionSnapshot.cs
         Ingestion/
           IngestionConnectorCapabilities.cs
           ProviderConstituentRecord.cs
@@ -488,6 +545,9 @@ ResearchPlatform/
       DataWarehouse/
         DataWarehouse.csproj
         DataWarehouseModule.cs
+        CorporateActions/
+          EfCorporateActionRepository.cs
+          SqliteCorporateActionRepositoryFactory.cs
         Constituents/
           EfIndexConstituentPitRepository.cs
           SqliteIndexConstituentPitRepositoryFactory.cs
@@ -546,16 +606,16 @@ When continuing, do not revert unrelated parent-repo changes unless explicitly r
 ---
 
 ## 11. Immediate Next Work (recommended)
-1. Start `T-009` (corporate actions ingestion persistence path).
-2. Then `T-010` (adjusted/unadjusted series generation).
-3. Then `T-011` (data QA suite).
+1. Start `T-010` (adjusted/unadjusted series generation).
+2. Then `T-011` (data QA suite).
+3. Then `T-012` (scheduler + retries + alerts).
 
-T-008 completion summary:
-- Added first provider adapter (`Massive` EOD) in `DataIngestion`.
-- Added Massive aggregate response parsing for daily bars.
-- Added fixture fallback mode for offline/dev usage.
-- Updated connector smoke flow to respect connector capabilities.
-- Verified connector flow for both `Mock` and `Massive`.
+T-009 completion summary:
+- Added corporate-actions repository contract and EF implementation.
+- Added ingestion-run audit linkage and provider metadata preservation to `corporate_actions`.
+- Added Massive dividends/splits connector support.
+- Added `--corporate-actions-smoke` end-to-end validation path.
+- Verified persistence flow for both `Mock` and `Massive` fixture mode.
 
 ---
 
@@ -568,7 +628,7 @@ Use it directly to reload context in low-token sessions.
 ---
 
 ## 13. One-Paragraph Summary
-This session transformed thesis analysis into a concrete research-platform build path, locked scope (US equities, SP500/SP100, long-only, research-only), implemented architecture/config/CI foundations (`T-001` to `T-003`), established the canonical warehouse schema migration (`T-004`), completed symbol identity/mapping enrichment (`T-005`), implemented the PIT constituent pipeline for SP500/SP100 (`T-006`), added provider-agnostic ingestion connector contracts (`T-007`), and completed the first non-mock provider adapter (`T-008`, Massive EOD). The project is now ready for `T-009` (corporate actions ingestion persistence path).
+This session transformed thesis analysis into a concrete research-platform build path, locked scope (US equities, SP500/SP100, long-only, research-only), implemented architecture/config/CI foundations (`T-001` to `T-003`), established the canonical warehouse schema migration (`T-004`), completed symbol identity/mapping enrichment (`T-005`), implemented the PIT constituent pipeline for SP500/SP100 (`T-006`), added provider-agnostic ingestion connector contracts (`T-007`), completed the first non-mock provider adapter (`T-008`, Massive EOD), and then completed `T-009` with corporate-actions persistence plus ingestion-run auditability. The project is now ready for `T-010` (adjusted/unadjusted series generation).
 
 ---
 

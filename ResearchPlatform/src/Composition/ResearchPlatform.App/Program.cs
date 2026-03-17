@@ -2,6 +2,7 @@ using AiResearchAssistant;
 using BacktestEngine;
 using DataIngestion.Connectors;
 using DataWarehouse.Constituents;
+using DataWarehouse.CorporateActions;
 using DataIngestion;
 using DataWarehouse;
 using DataWarehouse.Schema;
@@ -15,6 +16,7 @@ using ResearchPlatform.Contracts.Ingestion;
 using ResearchPlatform.Contracts.Symbols;
 using ResearchPlatform.Contracts.Universes;
 using StrategyRegistry;
+using System.Text.Json;
 
 var command = StartupCommand.Parse(args);
 var config = PlatformConfig.Load(command.EnvironmentOverride);
@@ -44,6 +46,12 @@ if (command.RunPitConstituentSmoke)
 if (command.RunConnectorSmoke)
 {
     await RunConnectorSmokeAsync(config);
+    return;
+}
+
+if (command.RunCorporateActionsSmoke)
+{
+    await RunCorporateActionsSmokeAsync(config);
     return;
 }
 
@@ -216,13 +224,7 @@ static async Task RunPitConstituentSmokeAsync(PlatformConfig config)
 
 static async Task RunConnectorSmokeAsync(PlatformConfig config)
 {
-    var connector = ProviderDataConnectorFactory.Create(
-        config.DataIngestion.Provider,
-        new ProviderDataConnectorFactoryOptions(
-            RequestTimeoutSeconds: config.DataIngestion.RequestTimeoutSeconds,
-            MassiveApiBaseUrl: config.DataIngestion.MassiveApiBaseUrl,
-            MassiveApiKey: config.DataIngestion.MassiveApiKey,
-            MassiveUseFixtureFallbackWhenApiKeyMissing: config.DataIngestion.MassiveUseFixtureFallbackWhenApiKeyMissing));
+    var connector = CreateProviderConnector(config);
 
     var indexCode = config.DataIngestion.Universes.FirstOrDefault() ?? UniverseCodes.Sp500;
     ProviderConstituentSnapshotBatch? firstConstituentSnapshot = null;
@@ -319,14 +321,104 @@ static async Task RunConnectorSmokeAsync(PlatformConfig config)
     Console.WriteLine($"- Sample symbols: {string.Join(", ", sampleSymbols)}");
 }
 
+static async Task RunCorporateActionsSmokeAsync(PlatformConfig config)
+{
+    var sqliteConnection = ResolveSqliteConnectionString(config);
+    await EnsureWarehouseMigratedAsync(sqliteConnection);
+
+    var connector = CreateProviderConnector(config);
+    if (!connector.Capabilities.SupportsCorporateActions)
+    {
+        throw new InvalidOperationException(
+            $"Provider '{connector.ProviderCode}' does not support corporate actions, so T-009 smoke cannot run.");
+    }
+
+    var symbolRepository = SqliteSymbolIdentityRepositoryFactory.Create(sqliteConnection);
+    var corporateActionRepository = SqliteCorporateActionRepositoryFactory.Create(sqliteConnection);
+
+    try
+    {
+        await SeedSymbolsForProviderAsync(symbolRepository, connector.ProviderCode);
+
+        var sampleSymbols = connector.ProviderCode.Equals("MASSIVE", StringComparison.OrdinalIgnoreCase)
+            ? new[] { "AAPL", "MSFT", "AMZN" }
+            : new[] { "AAPL", "MSFT", "AMZN" };
+
+        var fromDate = new DateOnly(2020, 1, 1);
+        var toDate = new DateOnly(2026, 12, 31);
+
+        var batch = await connector.FetchCorporateActionsAsync(new ProviderCorporateActionRequest(
+            ProviderSymbols: sampleSymbols,
+            FromDate: fromDate,
+            ToDate: toDate));
+
+        var loadResult = await corporateActionRepository.UpsertActionsAsync(new ResearchPlatform.Contracts.CorporateActions.CorporateActionLoadRequest(
+            Provider: connector.ProviderCode,
+            FromDate: batch.FromDate,
+            ToDate: batch.ToDate,
+            Actions: batch.Actions,
+            RequestParametersJson: JsonSerializer.Serialize(new
+            {
+                Smoke = true,
+                Symbols = sampleSymbols,
+                batch.FromDate,
+                batch.ToDate
+            })));
+
+        var storedAapl = await corporateActionRepository.GetActionsAsync("AAPL", fromDate, toDate);
+        var storedMsft = await corporateActionRepository.GetActionsAsync("MSFT", fromDate, toDate);
+        var storedAmzn = await corporateActionRepository.GetActionsAsync("AMZN", fromDate, toDate);
+        var storedRows = storedAapl.Count + storedMsft.Count + storedAmzn.Count;
+
+        Console.WriteLine("Corporate actions smoke check completed.");
+        Console.WriteLine($"- SQLite Connection: {MaskConnectionString(sqliteConnection)}");
+        Console.WriteLine($"- Provider: {connector.ProviderCode}");
+        Console.WriteLine($"- Fetched action rows: {batch.Actions.Count}");
+        Console.WriteLine($"- Ingestion run id: {loadResult.RunId}");
+        Console.WriteLine($"- Rows inserted: {loadResult.RowsInserted}");
+        Console.WriteLine($"- Rows updated: {loadResult.RowsUpdated}");
+        Console.WriteLine($"- Resolved symbols: {loadResult.ResolvedSymbolCount}");
+        Console.WriteLine($"- Stored action rows for smoke symbols: {storedRows}");
+        Console.WriteLine($"- AAPL actions: {FormatCorporateActionSummary(storedAapl)}");
+        Console.WriteLine($"- MSFT actions: {FormatCorporateActionSummary(storedMsft)}");
+        Console.WriteLine($"- AMZN actions: {FormatCorporateActionSummary(storedAmzn)}");
+    }
+    finally
+    {
+        if (corporateActionRepository is IAsyncDisposable corporateAsyncDisposable)
+        {
+            await corporateAsyncDisposable.DisposeAsync();
+        }
+        else if (corporateActionRepository is IDisposable corporateDisposable)
+        {
+            corporateDisposable.Dispose();
+        }
+
+        if (symbolRepository is IAsyncDisposable symbolAsyncDisposable)
+        {
+            await symbolAsyncDisposable.DisposeAsync();
+        }
+        else if (symbolRepository is IDisposable symbolDisposable)
+        {
+            symbolDisposable.Dispose();
+        }
+    }
+}
+
 static async Task SeedSymbolsForPitSmokeAsync(ISymbolIdentityRepository repository)
 {
+    await SeedSymbolsForProviderAsync(repository, "Mock");
+}
+
+static async Task SeedSymbolsForProviderAsync(ISymbolIdentityRepository repository, string providerCode)
+{
+    var normalizedProvider = string.IsNullOrWhiteSpace(providerCode) ? "Mock" : providerCode.Trim();
     var symbols = new[]
     {
-        new SymbolEnrichmentRequest("Mock", "AAPL", new DateOnly(1980, 12, 12), "AAPL", "Apple Inc.", "XNAS"),
-        new SymbolEnrichmentRequest("Mock", "MSFT", new DateOnly(1986, 3, 13), "MSFT", "Microsoft Corporation", "XNAS"),
-        new SymbolEnrichmentRequest("Mock", "NVDA", new DateOnly(1999, 1, 22), "NVDA", "NVIDIA Corporation", "XNAS"),
-        new SymbolEnrichmentRequest("Mock", "AMZN", new DateOnly(1997, 5, 15), "AMZN", "Amazon.com, Inc.", "XNAS")
+        new SymbolEnrichmentRequest(normalizedProvider, "AAPL", new DateOnly(1980, 12, 12), "AAPL", "Apple Inc.", "XNAS"),
+        new SymbolEnrichmentRequest(normalizedProvider, "MSFT", new DateOnly(1986, 3, 13), "MSFT", "Microsoft Corporation", "XNAS"),
+        new SymbolEnrichmentRequest(normalizedProvider, "NVDA", new DateOnly(1999, 1, 22), "NVDA", "NVIDIA Corporation", "XNAS"),
+        new SymbolEnrichmentRequest(normalizedProvider, "AMZN", new DateOnly(1997, 5, 15), "AMZN", "Amazon.com, Inc.", "XNAS")
     };
 
     foreach (var symbol in symbols)
@@ -334,6 +426,20 @@ static async Task SeedSymbolsForPitSmokeAsync(ISymbolIdentityRepository reposito
         await repository.UpsertSymbolAsync(symbol);
     }
 }
+
+static IProviderDataConnector CreateProviderConnector(PlatformConfig config) =>
+    ProviderDataConnectorFactory.Create(
+        config.DataIngestion.Provider,
+        new ProviderDataConnectorFactoryOptions(
+            RequestTimeoutSeconds: config.DataIngestion.RequestTimeoutSeconds,
+            MassiveApiBaseUrl: config.DataIngestion.MassiveApiBaseUrl,
+            MassiveApiKey: config.DataIngestion.MassiveApiKey,
+            MassiveUseFixtureFallbackWhenApiKeyMissing: config.DataIngestion.MassiveUseFixtureFallbackWhenApiKeyMissing));
+
+static string FormatCorporateActionSummary(IReadOnlyList<ResearchPlatform.Contracts.CorporateActions.CorporateActionSnapshot> actions) =>
+    actions.Count == 0
+        ? "<none>"
+        : string.Join(", ", actions.Select(x => $"{x.ActionDate:yyyy-MM-dd}:{x.ActionTypeCode}:{x.Value.ToString("0.########", System.Globalization.CultureInfo.InvariantCulture)}"));
 
 static string ResolveSqliteConnectionString(PlatformConfig config)
 {
@@ -383,7 +489,8 @@ internal sealed record StartupCommand(
     bool ValidateConfigOnly,
     bool RunSymbolIdentitySmoke,
     bool RunPitConstituentSmoke,
-    bool RunConnectorSmoke)
+    bool RunConnectorSmoke,
+    bool RunCorporateActionsSmoke)
 {
     public static StartupCommand Parse(string[] args)
     {
@@ -392,6 +499,7 @@ internal sealed record StartupCommand(
         var runSymbolIdentitySmoke = false;
         var runPitConstituentSmoke = false;
         var runConnectorSmoke = false;
+        var runCorporateActionsSmoke = false;
 
         for (var i = 0; i < args.Length; i++)
         {
@@ -410,12 +518,21 @@ internal sealed record StartupCommand(
                 case "--connector-smoke":
                     runConnectorSmoke = true;
                     break;
+                case "--corporate-actions-smoke":
+                    runCorporateActionsSmoke = true;
+                    break;
                 case "--environment" when i + 1 < args.Length:
                     environment = args[++i];
                     break;
             }
         }
 
-        return new StartupCommand(environment, validateConfigOnly, runSymbolIdentitySmoke, runPitConstituentSmoke, runConnectorSmoke);
+        return new StartupCommand(
+            environment,
+            validateConfigOnly,
+            runSymbolIdentitySmoke,
+            runPitConstituentSmoke,
+            runConnectorSmoke,
+            runCorporateActionsSmoke);
     }
 }

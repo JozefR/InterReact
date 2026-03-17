@@ -130,7 +130,7 @@ Optional smoke run:
 dotnet run --project src/Composition/ResearchPlatform.App/ResearchPlatform.App.csproj -- --pit-smoke
 ```
 
-## Ingestion Connectors (T-007, T-008)
+## Ingestion Connectors (T-007, T-008, T-009)
 
 Provider-agnostic ingestion connector contract with two adapters:
 
@@ -150,4 +150,33 @@ Run connector smoke with `Massive` provider profile:
 ```bash
 RP_ENVIRONMENT=Production \
   dotnet run --project src/Composition/ResearchPlatform.App/ResearchPlatform.App.csproj -- --connector-smoke
+```
+
+## Corporate Actions Ingestion (T-009)
+
+Corporate-action persistence and ingestion-run audit path:
+
+- contracts:
+  - `src/Contracts/ResearchPlatform.Contracts/Abstractions/ICorporateActionRepository.cs`
+  - `src/Contracts/ResearchPlatform.Contracts/CorporateActions/CorporateActionLoadRequest.cs`
+  - `src/Contracts/ResearchPlatform.Contracts/CorporateActions/CorporateActionLoadResult.cs`
+  - `src/Contracts/ResearchPlatform.Contracts/CorporateActions/CorporateActionSnapshot.cs`
+- implementation:
+  - `src/Modules/DataWarehouse/CorporateActions/EfCorporateActionRepository.cs`
+  - `src/Modules/DataWarehouse/CorporateActions/SqliteCorporateActionRepositoryFactory.cs`
+- details:
+  - `docs/corporate-actions-ingestion.md`
+  - `docs/data-schema.md`
+
+Optional end-to-end persistence smoke:
+
+```bash
+dotnet run --project src/Composition/ResearchPlatform.App/ResearchPlatform.App.csproj -- --corporate-actions-smoke
+```
+
+Run the same smoke against the `Massive` provider profile:
+
+```bash
+RP_ENVIRONMENT=Production \
+  dotnet run --project src/Composition/ResearchPlatform.App/ResearchPlatform.App.csproj -- --corporate-actions-smoke
 ```

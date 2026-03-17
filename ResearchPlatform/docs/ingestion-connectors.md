@@ -1,4 +1,4 @@
-# Ingestion Connectors (T-007, T-008)
+# Ingestion Connectors (T-007, T-008, T-009)
 
 This document defines the provider-agnostic ingestion connector contract layer.
 
@@ -29,6 +29,11 @@ DTO families:
 - connector metadata:
   - `IngestionConnectorCapabilities`
 
+`ProviderCorporateActionRecord` now also preserves:
+
+- `AdjustmentFactor`
+- `AttributesJson`
+
 ## Why this split
 
 - Contract DTOs are provider-neutral and suitable for test doubles.
@@ -50,17 +55,21 @@ DTO families:
 - business-day daily bars
 - sample corporate actions
 
-`Massive` connector behavior (current first production-focused adapter):
+`Massive` connector behavior:
 
 - uses Massive Stocks API aggregate bars endpoint for EOD pulls:
   - `/v2/aggs/ticker/{ticker}/range/1/day/{from}/{to}`
+- uses Massive Stocks corporate-action endpoints:
+  - `/stocks/v1/dividends`
+  - `/stocks/v1/splits`
 - supports filtered daily price pulls by symbol + date window
+- supports filtered corporate-action pulls by symbol + date window
 - supports fixture fallback when API key is missing (deterministic local validation)
-- does not implement constituents or corporate actions yet in phase 1
+- preserves raw provider corporate-action metadata in `AttributesJson`
 
 Note:
-- Massive connector is EOD-focused in this phase and intentionally capability-limited.
-- Corporate actions support is planned in `T-009`.
+- Massive connector is still EOD-focused in this phase.
+- It intentionally does not implement index constituent snapshots.
 
 ## Smoke Command
 
