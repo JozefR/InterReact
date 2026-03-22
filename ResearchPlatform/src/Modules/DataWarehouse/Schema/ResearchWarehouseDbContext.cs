@@ -92,7 +92,13 @@ public sealed class ResearchWarehouseDbContext(DbContextOptions<ResearchWarehous
     {
         e.ToTable("prices_daily_raw", t =>
         {
-            t.HasCheckConstraint("CK_prices_daily_raw_price_order", "High >= Low AND Open >= Low AND Open <= High AND Close >= Low AND Close <= High");
+            t.HasCheckConstraint(
+                "CK_prices_daily_raw_price_order",
+                "CAST(High AS REAL) >= CAST(Low AS REAL) " +
+                "AND CAST(Open AS REAL) >= CAST(Low AS REAL) " +
+                "AND CAST(Open AS REAL) <= CAST(High AS REAL) " +
+                "AND CAST(Close AS REAL) >= CAST(Low AS REAL) " +
+                "AND CAST(Close AS REAL) <= CAST(High AS REAL)");
             t.HasCheckConstraint("CK_prices_daily_raw_positive_volume", "Volume >= 0");
         });
         e.HasKey(x => x.Id);
@@ -152,9 +158,16 @@ public sealed class ResearchWarehouseDbContext(DbContextOptions<ResearchWarehous
     {
         e.ToTable("prices_daily_adjusted", t =>
         {
-            t.HasCheckConstraint("CK_prices_daily_adjusted_price_order", "High >= Low AND Open >= Low AND Open <= High AND Close >= Low AND Close <= High AND AdjustedClose >= 0");
+            t.HasCheckConstraint(
+                "CK_prices_daily_adjusted_price_order",
+                "CAST(High AS REAL) >= CAST(Low AS REAL) " +
+                "AND CAST(Open AS REAL) >= CAST(Low AS REAL) " +
+                "AND CAST(Open AS REAL) <= CAST(High AS REAL) " +
+                "AND CAST(Close AS REAL) >= CAST(Low AS REAL) " +
+                "AND CAST(Close AS REAL) <= CAST(High AS REAL) " +
+                "AND CAST(AdjustedClose AS REAL) >= 0");
             t.HasCheckConstraint("CK_prices_daily_adjusted_positive_volume", "Volume >= 0");
-            t.HasCheckConstraint("CK_prices_daily_adjusted_factor_non_negative", "AdjustmentFactor >= 0");
+            t.HasCheckConstraint("CK_prices_daily_adjusted_factor_non_negative", "CAST(AdjustmentFactor AS REAL) >= 0");
         });
         e.HasKey(x => x.Id);
 
@@ -167,7 +180,7 @@ public sealed class ResearchWarehouseDbContext(DbContextOptions<ResearchWarehous
         e.Property(x => x.AdjustmentBasis).HasMaxLength(64).IsRequired();
         e.Property(x => x.Provider).HasMaxLength(64).IsRequired();
 
-        e.HasIndex(x => new { x.SymbolMasterId, x.TradeDate, x.Provider }).IsUnique();
+        e.HasIndex(x => new { x.SymbolMasterId, x.TradeDate, x.Provider, x.AdjustmentBasis }).IsUnique();
         e.HasIndex(x => new { x.SymbolMasterId, x.TradeDate });
 
         e.HasOne(x => x.SymbolMaster)

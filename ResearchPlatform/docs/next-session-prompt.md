@@ -9,8 +9,8 @@ Load project context from:
 - ./docs/configuration.md
 
 Current objective:
-- Continue ResearchPlatform build from completed T-001, T-002, T-003, T-004, T-005, T-006, T-007, T-008, and T-009.
-- Start with T-010 (adjusted/unadjusted series generation).
+- Continue ResearchPlatform build from completed T-001 through T-010.
+- Start with T-011 (data QA suite).
 
 Constraints:
 - Keep module boundaries strict (modules reference contracts only).
@@ -22,5 +22,5 @@ Before coding, run:
 - ./scripts/validate-config-json.sh
 - ./scripts/validate-config.sh
 
-Then propose and implement T-010 end-to-end.
+Then propose and implement T-011 end-to-end.
 ```

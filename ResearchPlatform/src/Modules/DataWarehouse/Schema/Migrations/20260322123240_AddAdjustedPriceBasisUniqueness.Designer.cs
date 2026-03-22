@@ -3,6 +3,7 @@ using System;
 using DataWarehouse.Schema;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DataWarehouse.Schema.Migrations
 {
     [DbContext(typeof(ResearchWarehouseDbContext))]
-    partial class ResearchWarehouseDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260322123240_AddAdjustedPriceBasisUniqueness")]
+    partial class AddAdjustedPriceBasisUniqueness
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "9.0.0");
@@ -251,11 +254,11 @@ namespace DataWarehouse.Schema.Migrations
 
                     b.ToTable("prices_daily_adjusted", null, t =>
                         {
-                            t.HasCheckConstraint("CK_prices_daily_adjusted_factor_non_negative", "CAST(AdjustmentFactor AS REAL) >= 0");
+                            t.HasCheckConstraint("CK_prices_daily_adjusted_factor_non_negative", "AdjustmentFactor >= 0");
 
                             t.HasCheckConstraint("CK_prices_daily_adjusted_positive_volume", "Volume >= 0");
 
-                            t.HasCheckConstraint("CK_prices_daily_adjusted_price_order", "CAST(High AS REAL) >= CAST(Low AS REAL) AND CAST(Open AS REAL) >= CAST(Low AS REAL) AND CAST(Open AS REAL) <= CAST(High AS REAL) AND CAST(Close AS REAL) >= CAST(Low AS REAL) AND CAST(Close AS REAL) <= CAST(High AS REAL) AND CAST(AdjustedClose AS REAL) >= 0");
+                            t.HasCheckConstraint("CK_prices_daily_adjusted_price_order", "High >= Low AND Open >= Low AND Open <= High AND Close >= Low AND Close <= High AND AdjustedClose >= 0");
                         });
                 });
 
@@ -315,7 +318,7 @@ namespace DataWarehouse.Schema.Migrations
                         {
                             t.HasCheckConstraint("CK_prices_daily_raw_positive_volume", "Volume >= 0");
 
-                            t.HasCheckConstraint("CK_prices_daily_raw_price_order", "CAST(High AS REAL) >= CAST(Low AS REAL) AND CAST(Open AS REAL) >= CAST(Low AS REAL) AND CAST(Open AS REAL) <= CAST(High AS REAL) AND CAST(Close AS REAL) >= CAST(Low AS REAL) AND CAST(Close AS REAL) <= CAST(High AS REAL)");
+                            t.HasCheckConstraint("CK_prices_daily_raw_price_order", "High >= Low AND Open >= Low AND Open <= High AND Close >= Low AND Close <= High");
                         });
                 });
 

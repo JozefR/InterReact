@@ -1,6 +1,6 @@
 # ResearchPlatform Session Handoff (Complete)
 
-Last updated: 2026-03-06 (Europe/Vienna)
+Last updated: 2026-03-22 (Europe/Vienna)
 Repo root: `ResearchPlatform/`
 
 ## 0. Session Goal and What Was Discussed
@@ -11,7 +11,7 @@ In this session we:
 2. Converted analysis into a practical system roadmap.
 3. Locked project scope for `Research Platform v1`.
 4. Produced PRD/metrics/backlog structure in chat.
-5. Implemented `T-001` through `T-008` in code.
+5. Implemented `T-001` through `T-010` in code.
 6. Created and extended Notion architecture documentation.
 
 ---
@@ -140,7 +140,8 @@ Current execution status:
 - `T-007`: DONE
 - `T-008`: DONE
 - `T-009`: DONE
-- `T-010+`: NOT STARTED
+- `T-010`: DONE
+- `T-011+`: NOT STARTED
 
 ---
 
@@ -449,6 +450,58 @@ Validation:
 - `--connector-smoke` passes in `Massive` fixture mode with corporate actions enabled
 - `--corporate-actions-smoke` passes in both `Mock` and `Massive` provider profiles
 
+## 6.10 T-010 (DONE): Raw price persistence + adjusted series generation
+Implemented contract + repository seam:
+- `src/Contracts/ResearchPlatform.Contracts/Abstractions/IPriceHistoryRepository.cs`
+- `src/Contracts/ResearchPlatform.Contracts/Prices/AdjustmentBasisCodes.cs`
+- `src/Contracts/ResearchPlatform.Contracts/Prices/DailyPriceLoadRequest.cs`
+- `src/Contracts/ResearchPlatform.Contracts/Prices/DailyPriceLoadResult.cs`
+- `src/Contracts/ResearchPlatform.Contracts/Prices/AdjustedPriceBuildRequest.cs`
+- `src/Contracts/ResearchPlatform.Contracts/Prices/AdjustedPriceBuildResult.cs`
+- `src/Contracts/ResearchPlatform.Contracts/Prices/RawDailyPriceSnapshot.cs`
+- `src/Contracts/ResearchPlatform.Contracts/Prices/AdjustedDailyPriceSnapshot.cs`
+
+Warehouse implementation:
+- `src/Modules/DataWarehouse/Prices/EfPriceHistoryRepository.cs`
+- `src/Modules/DataWarehouse/Prices/SqlitePriceHistoryRepositoryFactory.cs`
+
+Schema and migration updates:
+- `src/Modules/DataWarehouse/Schema/ResearchWarehouseDbContext.cs`
+- `src/Modules/DataWarehouse/Schema/Migrations/20260322123240_AddAdjustedPriceBasisUniqueness.cs`
+- `src/Modules/DataWarehouse/Schema/Migrations/20260322123816_FixSqlitePriceConstraintCasting.cs`
+
+Connector updates:
+- `src/Modules/DataIngestion/Connectors/Massive/MassiveEodProviderDataConnector.cs`
+  - Massive daily aggregates now request `adjusted=false` so raw warehouse history stays provider-raw
+
+Composition support:
+- `src/Composition/ResearchPlatform.App/Program.cs`
+  - added `--price-history-smoke`
+
+Documentation updates:
+- `docs/price-history.md`
+- `docs/data-schema.md`
+- `README.md`
+- `docs/next-session-prompt.md`
+
+Key behavior added:
+- raw daily bar upsert by `(SymbolMasterId, TradeDate, Provider)`
+- adjusted rebuild by `(SymbolMasterId, TradeDate, Provider, AdjustmentBasis)`
+- supported bases:
+  - `SplitOnly`
+  - `SplitAndDividend`
+- provider-symbol resolution on each trade date before raw persistence
+- non-trading-day corporate-action handling by applying actions that fall between adjacent trading rows
+- ingestion-run audit rows for both raw loads and adjusted rebuilds
+- application-side adjusted-row validation before save
+- SQLite constraint fix: cast decimal text fields to `REAL` inside OHLC/factor checks so split-adjusted values compare numerically
+
+Validation:
+- boundary/config checks pass
+- build/test pass with warnings-as-errors
+- `--price-history-smoke` passes in `Mock`
+- `--price-history-smoke` passes in `Massive` fixture mode
+
 ---
 
 ## 7. Complete Project Structure (current)
@@ -470,6 +523,7 @@ ResearchPlatform/
     module-boundaries.md
     next-session-prompt.md
     pit-constituents.md
+    price-history.md
     session-handoff.md
     symbol-identity.md
   scripts/
@@ -496,6 +550,7 @@ ResearchPlatform/
           ICorporateActionRepository.cs
           IProviderDataConnector.cs
           IIndexConstituentPitRepository.cs
+          IPriceHistoryRepository.cs
           IModule.cs
           ISymbolIdentityRepository.cs
         CorporateActions/
@@ -513,6 +568,14 @@ ResearchPlatform/
           ProviderDailyPriceBatch.cs
           ProviderDailyPriceRecord.cs
           ProviderDailyPriceRequest.cs
+        Prices/
+          AdjustedPriceBuildRequest.cs
+          AdjustedPriceBuildResult.cs
+          AdjustedDailyPriceSnapshot.cs
+          AdjustmentBasisCodes.cs
+          DailyPriceLoadRequest.cs
+          DailyPriceLoadResult.cs
+          RawDailyPriceSnapshot.cs
         Symbols/
           AssetType.cs
           SymbolEnrichmentRequest.cs
@@ -551,6 +614,9 @@ ResearchPlatform/
         Constituents/
           EfIndexConstituentPitRepository.cs
           SqliteIndexConstituentPitRepositoryFactory.cs
+        Prices/
+          EfPriceHistoryRepository.cs
+          SqlitePriceHistoryRepositoryFactory.cs
         Symbols/
           EfSymbolIdentityRepository.cs
           SqliteSymbolIdentityRepositoryFactory.cs
@@ -606,16 +672,17 @@ When continuing, do not revert unrelated parent-repo changes unless explicitly r
 ---
 
 ## 11. Immediate Next Work (recommended)
-1. Start `T-010` (adjusted/unadjusted series generation).
-2. Then `T-011` (data QA suite).
-3. Then `T-012` (scheduler + retries + alerts).
+1. Start `T-011` (data QA suite).
+2. Then `T-012` (scheduler + retries + alerts).
+3. Then `T-013` (trading calendar/session engine).
 
-T-009 completion summary:
-- Added corporate-actions repository contract and EF implementation.
-- Added ingestion-run audit linkage and provider metadata preservation to `corporate_actions`.
-- Added Massive dividends/splits connector support.
-- Added `--corporate-actions-smoke` end-to-end validation path.
-- Verified persistence flow for both `Mock` and `Massive` fixture mode.
+T-010 completion summary:
+- Added price-history repository contract and EF implementation.
+- Added raw daily bar upsert plus adjusted rebuild pipelines.
+- Added separate adjusted uniqueness by `AdjustmentBasis`.
+- Fixed SQLite numeric constraint behavior for split-adjusted values.
+- Added `--price-history-smoke` end-to-end validation path.
+- Verified full flow for both `Mock` and `Massive` fixture mode.
 
 ---
 
@@ -628,7 +695,7 @@ Use it directly to reload context in low-token sessions.
 ---
 
 ## 13. One-Paragraph Summary
-This session transformed thesis analysis into a concrete research-platform build path, locked scope (US equities, SP500/SP100, long-only, research-only), implemented architecture/config/CI foundations (`T-001` to `T-003`), established the canonical warehouse schema migration (`T-004`), completed symbol identity/mapping enrichment (`T-005`), implemented the PIT constituent pipeline for SP500/SP100 (`T-006`), added provider-agnostic ingestion connector contracts (`T-007`), completed the first non-mock provider adapter (`T-008`, Massive EOD), and then completed `T-009` with corporate-actions persistence plus ingestion-run auditability. The project is now ready for `T-010` (adjusted/unadjusted series generation).
+This session transformed thesis analysis into a concrete research-platform build path, locked scope (US equities, SP500/SP100, long-only, research-only), implemented architecture/config/CI foundations (`T-001` to `T-003`), established the canonical warehouse schema migration (`T-004`), completed symbol identity/mapping enrichment (`T-005`), implemented the PIT constituent pipeline for SP500/SP100 (`T-006`), added provider-agnostic ingestion connector contracts (`T-007`), completed the first non-mock provider adapter (`T-008`, Massive EOD), completed `T-009` with corporate-actions persistence plus ingestion-run auditability, and completed `T-010` with raw daily price persistence plus adjusted-series generation. The project is now ready for `T-011` (data QA suite).
 
 ---
 

@@ -7,11 +7,15 @@ This document describes the current warehouse schema baseline for research workl
 - EF migrations:
   - `InitialCanonicalSchema`
   - `AddCorporateActionAuditColumns`
+  - `AddAdjustedPriceBasisUniqueness`
+  - `FixSqlitePriceConstraintCasting`
 - Context: `DataWarehouse.Schema.ResearchWarehouseDbContext`
 - Migration files:
-  - `src/Modules/DataWarehouse/Schema/Migrations/20260301131711_InitialCanonicalSchema.cs`
-  - `src/Modules/DataWarehouse/Schema/Migrations/20260317125628_AddCorporateActionAuditColumns.cs`
-  - `src/Modules/DataWarehouse/Schema/Migrations/ResearchWarehouseDbContextModelSnapshot.cs`
+- `src/Modules/DataWarehouse/Schema/Migrations/20260301131711_InitialCanonicalSchema.cs`
+- `src/Modules/DataWarehouse/Schema/Migrations/20260317125628_AddCorporateActionAuditColumns.cs`
+- `src/Modules/DataWarehouse/Schema/Migrations/20260322123240_AddAdjustedPriceBasisUniqueness.cs`
+- `src/Modules/DataWarehouse/Schema/Migrations/20260322123816_FixSqlitePriceConstraintCasting.cs`
+- `src/Modules/DataWarehouse/Schema/Migrations/ResearchWarehouseDbContextModelSnapshot.cs`
 
 ## Entity Relationship Overview
 
@@ -88,6 +92,7 @@ Key columns:
 Key constraints/indexes:
 - Unique: `(SymbolMasterId, TradeDate, Provider)`
 - Check: OHLC ordering and non-negative volume
+- SQLite note: price-order checks cast price columns to `REAL` so split-adjusted values compare numerically, not lexicographically
 
 ### `corporate_actions`
 Corporate action events used for adjustments and auditability.
@@ -116,8 +121,9 @@ Key columns:
 - `IngestionRunId` (nullable FK)
 
 Key constraints/indexes:
-- Unique: `(SymbolMasterId, TradeDate, Provider)`
+- Unique: `(SymbolMasterId, TradeDate, Provider, AdjustmentBasis)`
 - Check: OHLC ordering, non-negative volume, non-negative adjustment factor
+- SQLite note: price and factor checks cast decimal columns to `REAL` for numeric comparison safety
 
 ### `ingestion_runs`
 Operational run ledger for ingestion/reprocessing jobs.
@@ -159,3 +165,4 @@ export RP__DataWarehouse__ConnectionString="Data Source=researchplatform.db"
 - `T-005` added repository-level symbol master/mapping enrichment over this schema.
 - `T-006` added PIT constituent snapshot loading/query access patterns for SP500/SP100 on top of this baseline.
 - `T-009` extended `corporate_actions` with run audit linkage and provider metadata preservation for later adjustment work.
+- `T-010` added raw-price persistence plus adjusted-series generation on top of `prices_daily_raw`, `prices_daily_adjusted`, and `corporate_actions`.

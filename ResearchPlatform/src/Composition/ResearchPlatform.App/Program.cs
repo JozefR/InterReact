@@ -3,6 +3,7 @@ using BacktestEngine;
 using DataIngestion.Connectors;
 using DataWarehouse.Constituents;
 using DataWarehouse.CorporateActions;
+using DataWarehouse.Prices;
 using DataIngestion;
 using DataWarehouse;
 using DataWarehouse.Schema;
@@ -13,6 +14,7 @@ using Microsoft.EntityFrameworkCore;
 using ResearchPlatform.App.Configuration;
 using ResearchPlatform.Contracts.Abstractions;
 using ResearchPlatform.Contracts.Ingestion;
+using ResearchPlatform.Contracts.Prices;
 using ResearchPlatform.Contracts.Symbols;
 using ResearchPlatform.Contracts.Universes;
 using StrategyRegistry;
@@ -46,6 +48,12 @@ if (command.RunPitConstituentSmoke)
 if (command.RunConnectorSmoke)
 {
     await RunConnectorSmokeAsync(config);
+    return;
+}
+
+if (command.RunPriceHistorySmoke)
+{
+    await RunPriceHistorySmokeAsync(config);
     return;
 }
 
@@ -405,6 +413,155 @@ static async Task RunCorporateActionsSmokeAsync(PlatformConfig config)
     }
 }
 
+static async Task RunPriceHistorySmokeAsync(PlatformConfig config)
+{
+    var sqliteConnection = ResolveSqliteConnectionString(config);
+    await EnsureWarehouseMigratedAsync(sqliteConnection);
+
+    var connector = CreateProviderConnector(config);
+    if (!connector.Capabilities.SupportsDailyPrices)
+    {
+        throw new InvalidOperationException(
+            $"Provider '{connector.ProviderCode}' does not support daily prices, so T-010 smoke cannot run.");
+    }
+
+    if (!connector.Capabilities.SupportsCorporateActions)
+    {
+        throw new InvalidOperationException(
+            $"Provider '{connector.ProviderCode}' does not support corporate actions, so T-010 smoke cannot run.");
+    }
+
+    var symbolRepository = SqliteSymbolIdentityRepositoryFactory.Create(sqliteConnection);
+    var corporateActionRepository = SqliteCorporateActionRepositoryFactory.Create(sqliteConnection);
+    var priceHistoryRepository = SqlitePriceHistoryRepositoryFactory.Create(sqliteConnection);
+
+    try
+    {
+        await SeedSymbolsForProviderAsync(symbolRepository, connector.ProviderCode);
+
+        var sampleSymbols = new[] { "AAPL", "MSFT", "AMZN" };
+        var priceFromDate = new DateOnly(2026, 2, 10);
+        var priceToDate = new DateOnly(2026, 2, 20);
+        var actionFromDate = new DateOnly(2020, 1, 1);
+        var actionToDate = new DateOnly(2026, 12, 31);
+
+        var priceBatch = await connector.FetchDailyPricesAsync(new ProviderDailyPriceRequest(
+            ProviderSymbols: sampleSymbols,
+            FromDate: priceFromDate,
+            ToDate: priceToDate));
+
+        var rawLoadResult = await priceHistoryRepository.UpsertRawPricesAsync(new DailyPriceLoadRequest(
+            Provider: connector.ProviderCode,
+            FromDate: priceBatch.FromDate,
+            ToDate: priceBatch.ToDate,
+            Prices: priceBatch.Prices,
+            RequestParametersJson: JsonSerializer.Serialize(new
+            {
+                Smoke = true,
+                Symbols = sampleSymbols,
+                priceBatch.FromDate,
+                priceBatch.ToDate
+            })));
+
+        var actionBatch = await connector.FetchCorporateActionsAsync(new ProviderCorporateActionRequest(
+            ProviderSymbols: sampleSymbols,
+            FromDate: actionFromDate,
+            ToDate: actionToDate));
+
+        var actionLoadResult = await corporateActionRepository.UpsertActionsAsync(new ResearchPlatform.Contracts.CorporateActions.CorporateActionLoadRequest(
+            Provider: connector.ProviderCode,
+            FromDate: actionBatch.FromDate,
+            ToDate: actionBatch.ToDate,
+            Actions: actionBatch.Actions,
+            RequestParametersJson: JsonSerializer.Serialize(new
+            {
+                Smoke = true,
+                Symbols = sampleSymbols,
+                actionBatch.FromDate,
+                actionBatch.ToDate
+            })));
+
+        var splitOnlyResult = await priceHistoryRepository.RebuildAdjustedPricesAsync(new AdjustedPriceBuildRequest(
+            Provider: connector.ProviderCode,
+            AdjustmentBasis: AdjustmentBasisCodes.SplitOnly,
+            CanonicalSymbols: sampleSymbols,
+            FromDate: priceFromDate,
+            ToDate: priceToDate,
+            RequestParametersJson: JsonSerializer.Serialize(new
+            {
+                Smoke = true,
+                Basis = AdjustmentBasisCodes.SplitOnly,
+                Symbols = sampleSymbols,
+                FromDate = priceFromDate,
+                ToDate = priceToDate
+            })));
+
+        var splitAndDividendResult = await priceHistoryRepository.RebuildAdjustedPricesAsync(new AdjustedPriceBuildRequest(
+            Provider: connector.ProviderCode,
+            AdjustmentBasis: AdjustmentBasisCodes.SplitAndDividend,
+            CanonicalSymbols: sampleSymbols,
+            FromDate: priceFromDate,
+            ToDate: priceToDate,
+            RequestParametersJson: JsonSerializer.Serialize(new
+            {
+                Smoke = true,
+                Basis = AdjustmentBasisCodes.SplitAndDividend,
+                Symbols = sampleSymbols,
+                FromDate = priceFromDate,
+                ToDate = priceToDate
+            })));
+
+        var rawAapl = await priceHistoryRepository.GetRawPricesAsync("AAPL", connector.ProviderCode, priceFromDate, priceToDate);
+        var splitOnlyAapl = await priceHistoryRepository.GetAdjustedPricesAsync("AAPL", connector.ProviderCode, AdjustmentBasisCodes.SplitOnly, priceFromDate, priceToDate);
+        var splitAndDividendMsft = await priceHistoryRepository.GetAdjustedPricesAsync("MSFT", connector.ProviderCode, AdjustmentBasisCodes.SplitAndDividend, priceFromDate, priceToDate);
+        var splitAndDividendAmzn = await priceHistoryRepository.GetAdjustedPricesAsync("AMZN", connector.ProviderCode, AdjustmentBasisCodes.SplitAndDividend, priceFromDate, priceToDate);
+
+        Console.WriteLine("Price history smoke check completed.");
+        Console.WriteLine($"- SQLite Connection: {MaskConnectionString(sqliteConnection)}");
+        Console.WriteLine($"- Provider: {connector.ProviderCode}");
+        Console.WriteLine($"- Raw price rows fetched: {priceBatch.Prices.Count}");
+        Console.WriteLine($"- Corporate action rows fetched: {actionBatch.Actions.Count}");
+        Console.WriteLine($"- Raw price load run id: {rawLoadResult.RunId}");
+        Console.WriteLine($"- Corporate action load run id: {actionLoadResult.RunId}");
+        Console.WriteLine($"- SplitOnly rebuild run id: {splitOnlyResult.RunId}");
+        Console.WriteLine($"- SplitAndDividend rebuild run id: {splitAndDividendResult.RunId}");
+        Console.WriteLine($"- SplitOnly rows inserted/updated: {splitOnlyResult.RowsInserted}/{splitOnlyResult.RowsUpdated}");
+        Console.WriteLine($"- SplitAndDividend rows inserted/updated: {splitAndDividendResult.RowsInserted}/{splitAndDividendResult.RowsUpdated}");
+        Console.WriteLine($"- AAPL raw vs SplitOnly: {FormatRawAdjustedComparison(rawAapl, splitOnlyAapl)}");
+        Console.WriteLine($"- MSFT SplitAndDividend: {FormatAdjustedSeriesSummary(splitAndDividendMsft)}");
+        Console.WriteLine($"- AMZN SplitAndDividend: {FormatAdjustedSeriesSummary(splitAndDividendAmzn)}");
+    }
+    finally
+    {
+        if (priceHistoryRepository is IAsyncDisposable priceAsyncDisposable)
+        {
+            await priceAsyncDisposable.DisposeAsync();
+        }
+        else if (priceHistoryRepository is IDisposable priceDisposable)
+        {
+            priceDisposable.Dispose();
+        }
+
+        if (corporateActionRepository is IAsyncDisposable corporateAsyncDisposable)
+        {
+            await corporateAsyncDisposable.DisposeAsync();
+        }
+        else if (corporateActionRepository is IDisposable corporateDisposable)
+        {
+            corporateDisposable.Dispose();
+        }
+
+        if (symbolRepository is IAsyncDisposable symbolAsyncDisposable)
+        {
+            await symbolAsyncDisposable.DisposeAsync();
+        }
+        else if (symbolRepository is IDisposable symbolDisposable)
+        {
+            symbolDisposable.Dispose();
+        }
+    }
+}
+
 static async Task SeedSymbolsForPitSmokeAsync(ISymbolIdentityRepository repository)
 {
     await SeedSymbolsForProviderAsync(repository, "Mock");
@@ -440,6 +597,45 @@ static string FormatCorporateActionSummary(IReadOnlyList<ResearchPlatform.Contra
     actions.Count == 0
         ? "<none>"
         : string.Join(", ", actions.Select(x => $"{x.ActionDate:yyyy-MM-dd}:{x.ActionTypeCode}:{x.Value.ToString("0.########", System.Globalization.CultureInfo.InvariantCulture)}"));
+
+static string FormatRawAdjustedComparison(
+    IReadOnlyList<RawDailyPriceSnapshot> rawPrices,
+    IReadOnlyList<AdjustedDailyPriceSnapshot> adjustedPrices)
+{
+    if (rawPrices.Count == 0 || adjustedPrices.Count == 0)
+    {
+        return "<none>";
+    }
+
+    var firstRaw = rawPrices.First();
+    var firstAdjusted = adjustedPrices.First();
+    var lastRaw = rawPrices.Last();
+    var lastAdjusted = adjustedPrices.Last();
+
+    return string.Join(
+        "; ",
+        $"first {firstRaw.TradeDate:yyyy-MM-dd} raw={FormatDecimal(firstRaw.Close)} adj={FormatDecimal(firstAdjusted.AdjustedClose)} factor={FormatDecimal(firstAdjusted.AdjustmentFactor)}",
+        $"last {lastRaw.TradeDate:yyyy-MM-dd} raw={FormatDecimal(lastRaw.Close)} adj={FormatDecimal(lastAdjusted.AdjustedClose)} factor={FormatDecimal(lastAdjusted.AdjustmentFactor)}");
+}
+
+static string FormatAdjustedSeriesSummary(IReadOnlyList<AdjustedDailyPriceSnapshot> adjustedPrices)
+{
+    if (adjustedPrices.Count == 0)
+    {
+        return "<none>";
+    }
+
+    var first = adjustedPrices.First();
+    var last = adjustedPrices.Last();
+
+    return string.Join(
+        "; ",
+        $"first {first.TradeDate:yyyy-MM-dd} close={FormatDecimal(first.AdjustedClose)} factor={FormatDecimal(first.AdjustmentFactor)}",
+        $"last {last.TradeDate:yyyy-MM-dd} close={FormatDecimal(last.AdjustedClose)} factor={FormatDecimal(last.AdjustmentFactor)}");
+}
+
+static string FormatDecimal(decimal value) =>
+    value.ToString("0.########", System.Globalization.CultureInfo.InvariantCulture);
 
 static string ResolveSqliteConnectionString(PlatformConfig config)
 {
@@ -490,6 +686,7 @@ internal sealed record StartupCommand(
     bool RunSymbolIdentitySmoke,
     bool RunPitConstituentSmoke,
     bool RunConnectorSmoke,
+    bool RunPriceHistorySmoke,
     bool RunCorporateActionsSmoke)
 {
     public static StartupCommand Parse(string[] args)
@@ -499,6 +696,7 @@ internal sealed record StartupCommand(
         var runSymbolIdentitySmoke = false;
         var runPitConstituentSmoke = false;
         var runConnectorSmoke = false;
+        var runPriceHistorySmoke = false;
         var runCorporateActionsSmoke = false;
 
         for (var i = 0; i < args.Length; i++)
@@ -518,6 +716,9 @@ internal sealed record StartupCommand(
                 case "--connector-smoke":
                     runConnectorSmoke = true;
                     break;
+                case "--price-history-smoke":
+                    runPriceHistorySmoke = true;
+                    break;
                 case "--corporate-actions-smoke":
                     runCorporateActionsSmoke = true;
                     break;
@@ -533,6 +734,7 @@ internal sealed record StartupCommand(
             runSymbolIdentitySmoke,
             runPitConstituentSmoke,
             runConnectorSmoke,
+            runPriceHistorySmoke,
             runCorporateActionsSmoke);
     }
 }

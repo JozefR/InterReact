@@ -9,7 +9,7 @@ internal static class MassiveFixturePayloads
   "ticker": "AAPL",
   "queryCount": 5,
   "resultsCount": 5,
-  "adjusted": true,
+  "adjusted": false,
   "results": [
     { "o": 196.11, "h": 198.33, "l": 194.87, "c": 197.90, "v": 54820000, "vw": 197.07, "date": "2026-02-10" },
     { "o": 197.85, "h": 199.42, "l": 196.73, "c": 198.94, "v": 50170000, "vw": 198.22, "date": "2026-02-11" },
@@ -26,7 +26,7 @@ internal static class MassiveFixturePayloads
   "ticker": "MSFT",
   "queryCount": 5,
   "resultsCount": 5,
-  "adjusted": true,
+  "adjusted": false,
   "results": [
     { "o": 431.42, "h": 434.11, "l": 428.90, "c": 433.35, "v": 26280000, "vw": 432.12, "date": "2026-02-10" },
     { "o": 433.10, "h": 436.45, "l": 432.55, "c": 435.80, "v": 24150000, "vw": 434.90, "date": "2026-02-11" },
@@ -43,7 +43,7 @@ internal static class MassiveFixturePayloads
   "ticker": "NVDA",
   "queryCount": 5,
   "resultsCount": 5,
-  "adjusted": true,
+  "adjusted": false,
   "results": [
     { "o": 737.30, "h": 748.25, "l": 731.84, "c": 745.16, "v": 38110000, "vw": 742.39, "date": "2026-02-10" },
     { "o": 745.92, "h": 752.03, "l": 739.67, "c": 748.72, "v": 36650000, "vw": 747.01, "date": "2026-02-11" },
@@ -60,7 +60,7 @@ internal static class MassiveFixturePayloads
   "ticker": "AMZN",
   "queryCount": 5,
   "resultsCount": 5,
-  "adjusted": true,
+  "adjusted": false,
   "results": [
     { "o": 199.87, "h": 202.64, "l": 198.90, "c": 201.78, "v": 35670000, "vw": 201.06, "date": "2026-02-10" },
     { "o": 201.92, "h": 203.51, "l": 200.31, "c": 202.88, "v": 33440000, "vw": 202.24, "date": "2026-02-11" },

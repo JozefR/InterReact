@@ -271,7 +271,7 @@ public sealed class MassiveEodProviderDataConnector : IProviderDataConnector
     {
         var url =
             $"{_apiBaseUrl}/v2/aggs/ticker/{Uri.EscapeDataString(symbol)}/range/1/day/{fromDate:yyyy-MM-dd}/{toDate:yyyy-MM-dd}" +
-            "?adjusted=true&sort=asc&limit=50000";
+            "?adjusted=false&sort=asc&limit=50000";
 
         return AppendApiKey(url);
     }

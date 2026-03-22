@@ -59,6 +59,7 @@ DTO families:
 
 - uses Massive Stocks API aggregate bars endpoint for EOD pulls:
   - `/v2/aggs/ticker/{ticker}/range/1/day/{from}/{to}`
+  - requests `adjusted=false` so warehouse raw history remains provider-raw for `T-010` rebuilds
 - uses Massive Stocks corporate-action endpoints:
   - `/stocks/v1/dividends`
   - `/stocks/v1/splits`

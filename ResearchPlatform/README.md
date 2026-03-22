@@ -84,6 +84,7 @@ Workflow:
 Canonical warehouse schema docs:
 
 - `docs/data-schema.md`
+- `docs/price-history.md`
 - `docs/symbol-identity.md`
 - `docs/pit-constituents.md`
 - `docs/ingestion-connectors.md`
@@ -179,4 +180,38 @@ Run the same smoke against the `Massive` provider profile:
 ```bash
 RP_ENVIRONMENT=Production \
   dotnet run --project src/Composition/ResearchPlatform.App/ResearchPlatform.App.csproj -- --corporate-actions-smoke
+```
+
+## Price History and Adjustments (T-010)
+
+Raw daily price persistence plus adjusted-series rebuild path:
+
+- contracts:
+  - `src/Contracts/ResearchPlatform.Contracts/Abstractions/IPriceHistoryRepository.cs`
+  - `src/Contracts/ResearchPlatform.Contracts/Prices/AdjustmentBasisCodes.cs`
+  - `src/Contracts/ResearchPlatform.Contracts/Prices/DailyPriceLoadRequest.cs`
+  - `src/Contracts/ResearchPlatform.Contracts/Prices/DailyPriceLoadResult.cs`
+  - `src/Contracts/ResearchPlatform.Contracts/Prices/AdjustedPriceBuildRequest.cs`
+  - `src/Contracts/ResearchPlatform.Contracts/Prices/AdjustedPriceBuildResult.cs`
+  - `src/Contracts/ResearchPlatform.Contracts/Prices/RawDailyPriceSnapshot.cs`
+  - `src/Contracts/ResearchPlatform.Contracts/Prices/AdjustedDailyPriceSnapshot.cs`
+- implementation:
+  - `src/Modules/DataWarehouse/Prices/EfPriceHistoryRepository.cs`
+  - `src/Modules/DataWarehouse/Prices/SqlitePriceHistoryRepositoryFactory.cs`
+- details:
+  - `docs/price-history.md`
+  - `docs/data-schema.md`
+
+Optional end-to-end smoke:
+
+```bash
+dotnet run --project src/Composition/ResearchPlatform.App/ResearchPlatform.App.csproj -- --price-history-smoke
+```
+
+Run the same smoke against the `Massive` production profile in fixture mode:
+
+```bash
+RP_ENVIRONMENT=Production \
+RP__DataIngestion__MassiveUseFixtureFallbackWhenApiKeyMissing=true \
+  dotnet run --project src/Composition/ResearchPlatform.App/ResearchPlatform.App.csproj -- --price-history-smoke
 ```
