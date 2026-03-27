@@ -84,6 +84,7 @@ Workflow:
 Canonical warehouse schema docs:
 
 - `docs/data-schema.md`
+- `docs/data-quality.md`
 - `docs/price-history.md`
 - `docs/symbol-identity.md`
 - `docs/pit-constituents.md`
@@ -214,4 +215,36 @@ Run the same smoke against the `Massive` production profile in fixture mode:
 RP_ENVIRONMENT=Production \
 RP__DataIngestion__MassiveUseFixtureFallbackWhenApiKeyMissing=true \
   dotnet run --project src/Composition/ResearchPlatform.App/ResearchPlatform.App.csproj -- --price-history-smoke
+```
+
+## Data Quality Suite (T-011)
+
+Repository-backed QA checks over raw prices, corporate actions, and adjusted series:
+
+- contracts:
+  - `src/Contracts/ResearchPlatform.Contracts/Abstractions/IDataQualityRepository.cs`
+  - `src/Contracts/ResearchPlatform.Contracts/Quality/DataQualityRunRequest.cs`
+  - `src/Contracts/ResearchPlatform.Contracts/Quality/DataQualityRunResult.cs`
+  - `src/Contracts/ResearchPlatform.Contracts/Quality/DataQualityResultSnapshot.cs`
+  - `src/Contracts/ResearchPlatform.Contracts/Quality/DataQualitySeverity.cs`
+  - `src/Contracts/ResearchPlatform.Contracts/Quality/DataQualityStatus.cs`
+- implementation:
+  - `src/Modules/DataWarehouse/Quality/EfDataQualityRepository.cs`
+  - `src/Modules/DataWarehouse/Quality/SqliteDataQualityRepositoryFactory.cs`
+- details:
+  - `docs/data-quality.md`
+  - `docs/data-schema.md`
+
+Optional end-to-end smoke:
+
+```bash
+dotnet run --project src/Composition/ResearchPlatform.App/ResearchPlatform.App.csproj -- --qa-smoke
+```
+
+Run the same smoke against the `Massive` production profile in fixture mode:
+
+```bash
+RP_ENVIRONMENT=Production \
+RP__DataIngestion__MassiveUseFixtureFallbackWhenApiKeyMissing=true \
+  dotnet run --project src/Composition/ResearchPlatform.App/ResearchPlatform.App.csproj -- --qa-smoke
 ```

@@ -166,3 +166,4 @@ export RP__DataWarehouse__ConnectionString="Data Source=researchplatform.db"
 - `T-006` added PIT constituent snapshot loading/query access patterns for SP500/SP100 on top of this baseline.
 - `T-009` extended `corporate_actions` with run audit linkage and provider metadata preservation for later adjustment work.
 - `T-010` added raw-price persistence plus adjusted-series generation on top of `prices_daily_raw`, `prices_daily_adjusted`, and `corporate_actions`.
+- `T-011` activated `qa_results` through a repository-backed QA suite and linked QA executions to `ingestion_runs`.

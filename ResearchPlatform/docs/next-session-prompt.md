@@ -9,8 +9,8 @@ Load project context from:
 - ./docs/configuration.md
 
 Current objective:
-- Continue ResearchPlatform build from completed T-001 through T-010.
-- Start with T-011 (data QA suite).
+- Continue ResearchPlatform build from completed T-001 through T-011.
+- Start with T-012 (scheduler + retries + alerts).
 
 Constraints:
 - Keep module boundaries strict (modules reference contracts only).
@@ -22,5 +22,5 @@ Before coding, run:
 - ./scripts/validate-config-json.sh
 - ./scripts/validate-config.sh
 
-Then propose and implement T-011 end-to-end.
+Then propose and implement T-012 end-to-end.
 ```

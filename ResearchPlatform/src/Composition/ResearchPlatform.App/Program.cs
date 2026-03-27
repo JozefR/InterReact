@@ -4,6 +4,7 @@ using DataIngestion.Connectors;
 using DataWarehouse.Constituents;
 using DataWarehouse.CorporateActions;
 using DataWarehouse.Prices;
+using DataWarehouse.Quality;
 using DataIngestion;
 using DataWarehouse;
 using DataWarehouse.Schema;
@@ -15,6 +16,7 @@ using ResearchPlatform.App.Configuration;
 using ResearchPlatform.Contracts.Abstractions;
 using ResearchPlatform.Contracts.Ingestion;
 using ResearchPlatform.Contracts.Prices;
+using ResearchPlatform.Contracts.Quality;
 using ResearchPlatform.Contracts.Symbols;
 using ResearchPlatform.Contracts.Universes;
 using StrategyRegistry;
@@ -60,6 +62,12 @@ if (command.RunPriceHistorySmoke)
 if (command.RunCorporateActionsSmoke)
 {
     await RunCorporateActionsSmokeAsync(config);
+    return;
+}
+
+if (command.RunQaSmoke)
+{
+    await RunQaSmokeAsync(config);
     return;
 }
 
@@ -413,6 +421,224 @@ static async Task RunCorporateActionsSmokeAsync(PlatformConfig config)
     }
 }
 
+static async Task RunQaSmokeAsync(PlatformConfig config)
+{
+    var sqliteConnection = ResolveSqliteConnectionString(config);
+    await EnsureWarehouseMigratedAsync(sqliteConnection);
+
+    var connector = CreateProviderConnector(config);
+    if (!connector.Capabilities.SupportsDailyPrices)
+    {
+        throw new InvalidOperationException(
+            $"Provider '{connector.ProviderCode}' does not support daily prices, so T-011 smoke cannot run.");
+    }
+
+    if (!connector.Capabilities.SupportsCorporateActions)
+    {
+        throw new InvalidOperationException(
+            $"Provider '{connector.ProviderCode}' does not support corporate actions, so T-011 smoke cannot run.");
+    }
+
+    var symbolRepository = SqliteSymbolIdentityRepositoryFactory.Create(sqliteConnection);
+    var corporateActionRepository = SqliteCorporateActionRepositoryFactory.Create(sqliteConnection);
+    var priceHistoryRepository = SqlitePriceHistoryRepositoryFactory.Create(sqliteConnection);
+    var dataQualityRepository = SqliteDataQualityRepositoryFactory.Create(sqliteConnection);
+    var storedProviderCode = connector.ProviderCode.Trim().ToUpperInvariant();
+
+    try
+    {
+        await SeedSymbolsForProviderAsync(symbolRepository, connector.ProviderCode);
+
+        var sampleSymbols = new[] { "AAPL", "MSFT", "AMZN" };
+        var priceFromDate = new DateOnly(2026, 2, 10);
+        var priceToDate = new DateOnly(2026, 2, 20);
+        var actionFromDate = new DateOnly(2020, 1, 1);
+        var actionToDate = new DateOnly(2026, 12, 31);
+        var adjustmentBases = new[] { AdjustmentBasisCodes.SplitOnly, AdjustmentBasisCodes.SplitAndDividend };
+
+        var priceBatch = await connector.FetchDailyPricesAsync(new ProviderDailyPriceRequest(
+            ProviderSymbols: sampleSymbols,
+            FromDate: priceFromDate,
+            ToDate: priceToDate));
+
+        await priceHistoryRepository.UpsertRawPricesAsync(new DailyPriceLoadRequest(
+            Provider: connector.ProviderCode,
+            FromDate: priceBatch.FromDate,
+            ToDate: priceBatch.ToDate,
+            Prices: priceBatch.Prices,
+            RequestParametersJson: JsonSerializer.Serialize(new
+            {
+                Smoke = true,
+                Stage = "SeedRawPrices",
+                Symbols = sampleSymbols,
+                priceBatch.FromDate,
+                priceBatch.ToDate
+            })));
+
+        var actionBatch = await connector.FetchCorporateActionsAsync(new ProviderCorporateActionRequest(
+            ProviderSymbols: sampleSymbols,
+            FromDate: actionFromDate,
+            ToDate: actionToDate));
+
+        await corporateActionRepository.UpsertActionsAsync(new ResearchPlatform.Contracts.CorporateActions.CorporateActionLoadRequest(
+            Provider: connector.ProviderCode,
+            FromDate: actionBatch.FromDate,
+            ToDate: actionBatch.ToDate,
+            Actions: actionBatch.Actions,
+            RequestParametersJson: JsonSerializer.Serialize(new
+            {
+                Smoke = true,
+                Stage = "SeedCorporateActions",
+                Symbols = sampleSymbols,
+                actionBatch.FromDate,
+                actionBatch.ToDate
+            })));
+
+        foreach (var adjustmentBasis in adjustmentBases)
+        {
+            await priceHistoryRepository.RebuildAdjustedPricesAsync(new AdjustedPriceBuildRequest(
+                Provider: connector.ProviderCode,
+                AdjustmentBasis: adjustmentBasis,
+                CanonicalSymbols: sampleSymbols,
+                FromDate: priceFromDate,
+                ToDate: priceToDate,
+                RequestParametersJson: JsonSerializer.Serialize(new
+                {
+                    Smoke = true,
+                    Stage = "SeedAdjustedPrices",
+                    Basis = adjustmentBasis,
+                    Symbols = sampleSymbols,
+                    FromDate = priceFromDate,
+                    ToDate = priceToDate
+                })));
+        }
+
+        var baselineResult = await dataQualityRepository.RunChecksAsync(new DataQualityRunRequest(
+            Provider: connector.ProviderCode,
+            CanonicalSymbols: sampleSymbols,
+            AdjustmentBases: adjustmentBases,
+            FromDate: priceFromDate,
+            ToDate: priceToDate,
+            RequestParametersJson: JsonSerializer.Serialize(new
+            {
+                Smoke = true,
+                Stage = "BaselineQa",
+                Symbols = sampleSymbols,
+                AdjustmentBases = adjustmentBases,
+                FromDate = priceFromDate,
+                ToDate = priceToDate
+            })));
+
+        var baselineChecks = await dataQualityRepository.GetResultsAsync(baselineResult.RunId);
+
+        var anomalyOptions = new DbContextOptionsBuilder<ResearchWarehouseDbContext>()
+            .UseSqlite(sqliteConnection)
+            .Options;
+
+        await using (var anomalyContext = new ResearchWarehouseDbContext(anomalyOptions))
+        {
+            var aaplSymbolId = await anomalyContext.SymbolMasters
+                .Where(x => x.Symbol == "AAPL")
+                .Select(x => x.Id)
+                .SingleAsync();
+
+            var msftSymbolId = await anomalyContext.SymbolMasters
+                .Where(x => x.Symbol == "MSFT")
+                .Select(x => x.Id)
+                .SingleAsync();
+
+            var rawAnomaly = await anomalyContext.PricesDailyRaw
+                .SingleAsync(x =>
+                    x.Provider == storedProviderCode &&
+                    x.SymbolMasterId == aaplSymbolId &&
+                    x.TradeDate == new DateOnly(2026, 2, 12));
+
+            rawAnomaly.Open = 31.10m;
+            rawAnomaly.High = 31.85m;
+            rawAnomaly.Low = 30.55m;
+            rawAnomaly.Close = 31.40m;
+            rawAnomaly.Vwap = 31.22m;
+
+            var missingAdjustedRow = await anomalyContext.PricesDailyAdjusted
+                .SingleAsync(x =>
+                    x.Provider == storedProviderCode &&
+                    x.SymbolMasterId == msftSymbolId &&
+                    x.AdjustmentBasis == AdjustmentBasisCodes.SplitAndDividend &&
+                    x.TradeDate == new DateOnly(2026, 2, 13));
+
+            anomalyContext.PricesDailyAdjusted.Remove(missingAdjustedRow);
+            await anomalyContext.SaveChangesAsync();
+        }
+
+        var anomalyResult = await dataQualityRepository.RunChecksAsync(new DataQualityRunRequest(
+            Provider: connector.ProviderCode,
+            CanonicalSymbols: sampleSymbols,
+            AdjustmentBases: adjustmentBases,
+            FromDate: priceFromDate,
+            ToDate: priceToDate,
+            RequestParametersJson: JsonSerializer.Serialize(new
+            {
+                Smoke = true,
+                Stage = "InjectedAnomalyQa",
+                Symbols = sampleSymbols,
+                AdjustmentBases = adjustmentBases,
+                FromDate = priceFromDate,
+                ToDate = priceToDate
+            })));
+
+        var anomalyChecks = await dataQualityRepository.GetResultsAsync(anomalyResult.RunId);
+
+        Console.WriteLine("Data-quality smoke check completed.");
+        Console.WriteLine($"- SQLite Connection: {MaskConnectionString(sqliteConnection)}");
+        Console.WriteLine($"- Provider: {connector.ProviderCode}");
+        Console.WriteLine($"- Baseline QA run id: {baselineResult.RunId}");
+        Console.WriteLine($"- Baseline checks passed/failed: {baselineResult.ChecksPassed}/{baselineResult.ChecksFailed}");
+        Console.WriteLine($"- Baseline failures: {FormatQaFailures(baselineChecks)}");
+        Console.WriteLine($"- Anomaly QA run id: {anomalyResult.RunId}");
+        Console.WriteLine($"- Anomaly checks passed/failed: {anomalyResult.ChecksPassed}/{anomalyResult.ChecksFailed}");
+        Console.WriteLine($"- Anomaly error/warning counts: {anomalyResult.ErrorCount}/{anomalyResult.WarningCount}");
+        Console.WriteLine($"- Anomaly failures: {FormatQaFailures(anomalyChecks)}");
+    }
+    finally
+    {
+        if (dataQualityRepository is IAsyncDisposable qaAsyncDisposable)
+        {
+            await qaAsyncDisposable.DisposeAsync();
+        }
+        else if (dataQualityRepository is IDisposable qaDisposable)
+        {
+            qaDisposable.Dispose();
+        }
+
+        if (priceHistoryRepository is IAsyncDisposable priceAsyncDisposable)
+        {
+            await priceAsyncDisposable.DisposeAsync();
+        }
+        else if (priceHistoryRepository is IDisposable priceDisposable)
+        {
+            priceDisposable.Dispose();
+        }
+
+        if (corporateActionRepository is IAsyncDisposable corporateAsyncDisposable)
+        {
+            await corporateAsyncDisposable.DisposeAsync();
+        }
+        else if (corporateActionRepository is IDisposable corporateDisposable)
+        {
+            corporateDisposable.Dispose();
+        }
+
+        if (symbolRepository is IAsyncDisposable symbolAsyncDisposable)
+        {
+            await symbolAsyncDisposable.DisposeAsync();
+        }
+        else if (symbolRepository is IDisposable symbolDisposable)
+        {
+            symbolDisposable.Dispose();
+        }
+    }
+}
+
 static async Task RunPriceHistorySmokeAsync(PlatformConfig config)
 {
     var sqliteConnection = ResolveSqliteConnectionString(config);
@@ -634,6 +860,17 @@ static string FormatAdjustedSeriesSummary(IReadOnlyList<AdjustedDailyPriceSnapsh
         $"last {last.TradeDate:yyyy-MM-dd} close={FormatDecimal(last.AdjustedClose)} factor={FormatDecimal(last.AdjustmentFactor)}");
 }
 
+static string FormatQaFailures(IReadOnlyList<DataQualityResultSnapshot> results)
+{
+    var failures = results
+        .Where(x => x.Status == DataQualityStatus.Fail)
+        .Take(6)
+        .Select(x => $"{x.CheckName} [{x.Scope}] severity={x.Severity} affected={x.AffectedRows}")
+        .ToArray();
+
+    return failures.Length == 0 ? "<none>" : string.Join("; ", failures);
+}
+
 static string FormatDecimal(decimal value) =>
     value.ToString("0.########", System.Globalization.CultureInfo.InvariantCulture);
 
@@ -687,7 +924,8 @@ internal sealed record StartupCommand(
     bool RunPitConstituentSmoke,
     bool RunConnectorSmoke,
     bool RunPriceHistorySmoke,
-    bool RunCorporateActionsSmoke)
+    bool RunCorporateActionsSmoke,
+    bool RunQaSmoke)
 {
     public static StartupCommand Parse(string[] args)
     {
@@ -698,6 +936,7 @@ internal sealed record StartupCommand(
         var runConnectorSmoke = false;
         var runPriceHistorySmoke = false;
         var runCorporateActionsSmoke = false;
+        var runQaSmoke = false;
 
         for (var i = 0; i < args.Length; i++)
         {
@@ -722,6 +961,9 @@ internal sealed record StartupCommand(
                 case "--corporate-actions-smoke":
                     runCorporateActionsSmoke = true;
                     break;
+                case "--qa-smoke":
+                    runQaSmoke = true;
+                    break;
                 case "--environment" when i + 1 < args.Length:
                     environment = args[++i];
                     break;
@@ -735,6 +977,7 @@ internal sealed record StartupCommand(
             runPitConstituentSmoke,
             runConnectorSmoke,
             runPriceHistorySmoke,
-            runCorporateActionsSmoke);
+            runCorporateActionsSmoke,
+            runQaSmoke);
     }
 }

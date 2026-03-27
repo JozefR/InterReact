@@ -1,6 +1,6 @@
 # ResearchPlatform Session Handoff (Complete)
 
-Last updated: 2026-03-22 (Europe/Vienna)
+Last updated: 2026-03-23 (Europe/Vienna)
 Repo root: `ResearchPlatform/`
 
 ## 0. Session Goal and What Was Discussed
@@ -11,7 +11,7 @@ In this session we:
 2. Converted analysis into a practical system roadmap.
 3. Locked project scope for `Research Platform v1`.
 4. Produced PRD/metrics/backlog structure in chat.
-5. Implemented `T-001` through `T-010` in code.
+5. Implemented `T-001` through `T-011` in code.
 6. Created and extended Notion architecture documentation.
 
 ---
@@ -141,7 +141,8 @@ Current execution status:
 - `T-008`: DONE
 - `T-009`: DONE
 - `T-010`: DONE
-- `T-011+`: NOT STARTED
+- `T-011`: DONE
+- `T-012+`: NOT STARTED
 
 ---
 
@@ -502,6 +503,48 @@ Validation:
 - `--price-history-smoke` passes in `Mock`
 - `--price-history-smoke` passes in `Massive` fixture mode
 
+## 6.11 T-011 (DONE): Data QA suite
+Implemented contract + repository seam:
+- `src/Contracts/ResearchPlatform.Contracts/Abstractions/IDataQualityRepository.cs`
+- `src/Contracts/ResearchPlatform.Contracts/Quality/DataQualityRunRequest.cs`
+- `src/Contracts/ResearchPlatform.Contracts/Quality/DataQualityRunResult.cs`
+- `src/Contracts/ResearchPlatform.Contracts/Quality/DataQualityResultSnapshot.cs`
+- `src/Contracts/ResearchPlatform.Contracts/Quality/DataQualitySeverity.cs`
+- `src/Contracts/ResearchPlatform.Contracts/Quality/DataQualityStatus.cs`
+
+Warehouse implementation:
+- `src/Modules/DataWarehouse/Quality/EfDataQualityRepository.cs`
+- `src/Modules/DataWarehouse/Quality/SqliteDataQualityRepositoryFactory.cs`
+
+Composition support:
+- `src/Composition/ResearchPlatform.App/Program.cs`
+  - added `--qa-smoke`
+
+Documentation updates:
+- `docs/data-quality.md`
+- `docs/data-schema.md`
+- `README.md`
+- `docs/next-session-prompt.md`
+
+Key behavior added:
+- QA executions now create an `ingestion_runs` row and persist per-check outcomes into `qa_results`
+- checks implemented:
+  - `RawPricePresence`
+  - `RawPriceShape`
+  - `CorporateActionValues`
+  - `UnexplainedPriceJump`
+  - `AdjustedRowCoverage`
+  - `AdjustedSeriesShape`
+- scope is provider + canonical symbol + optional adjustment basis
+- suite intentionally avoids exchange-calendar gap checks until `T-013`
+- smoke path proves both clean baseline behavior and anomaly detection
+
+Validation:
+- boundary/config checks pass
+- build/test pass with warnings-as-errors
+- `--qa-smoke` passes in `Mock`
+- `--qa-smoke` passes in `Massive` fixture mode
+
 ---
 
 ## 7. Complete Project Structure (current)
@@ -518,6 +561,7 @@ ResearchPlatform/
   docs/
     configuration.md
     corporate-actions-ingestion.md
+    data-quality.md
     data-schema.md
     ingestion-connectors.md
     module-boundaries.md
@@ -548,6 +592,7 @@ ResearchPlatform/
         ResearchPlatform.Contracts.csproj
         Abstractions/
           ICorporateActionRepository.cs
+          IDataQualityRepository.cs
           IProviderDataConnector.cs
           IIndexConstituentPitRepository.cs
           IPriceHistoryRepository.cs
@@ -576,6 +621,12 @@ ResearchPlatform/
           DailyPriceLoadRequest.cs
           DailyPriceLoadResult.cs
           RawDailyPriceSnapshot.cs
+        Quality/
+          DataQualityRunRequest.cs
+          DataQualityRunResult.cs
+          DataQualityResultSnapshot.cs
+          DataQualitySeverity.cs
+          DataQualityStatus.cs
         Symbols/
           AssetType.cs
           SymbolEnrichmentRequest.cs
@@ -617,6 +668,9 @@ ResearchPlatform/
         Prices/
           EfPriceHistoryRepository.cs
           SqlitePriceHistoryRepositoryFactory.cs
+        Quality/
+          EfDataQualityRepository.cs
+          SqliteDataQualityRepositoryFactory.cs
         Symbols/
           EfSymbolIdentityRepository.cs
           SqliteSymbolIdentityRepositoryFactory.cs
@@ -672,16 +726,15 @@ When continuing, do not revert unrelated parent-repo changes unless explicitly r
 ---
 
 ## 11. Immediate Next Work (recommended)
-1. Start `T-011` (data QA suite).
-2. Then `T-012` (scheduler + retries + alerts).
-3. Then `T-013` (trading calendar/session engine).
+1. Start `T-012` (scheduler + retries + alerts).
+2. Then `T-013` (trading calendar/session engine).
+3. Then `T-014` (portfolio accounting core).
 
-T-010 completion summary:
-- Added price-history repository contract and EF implementation.
-- Added raw daily bar upsert plus adjusted rebuild pipelines.
-- Added separate adjusted uniqueness by `AdjustmentBasis`.
-- Fixed SQLite numeric constraint behavior for split-adjusted values.
-- Added `--price-history-smoke` end-to-end validation path.
+T-011 completion summary:
+- Added data-quality repository contract and EF implementation.
+- Activated persistent QA result storage through `qa_results`.
+- Added repository-backed checks for raw prices, corporate actions, and adjusted coverage/shape.
+- Added `--qa-smoke` baseline-plus-anomaly validation path.
 - Verified full flow for both `Mock` and `Massive` fixture mode.
 
 ---
@@ -695,7 +748,7 @@ Use it directly to reload context in low-token sessions.
 ---
 
 ## 13. One-Paragraph Summary
-This session transformed thesis analysis into a concrete research-platform build path, locked scope (US equities, SP500/SP100, long-only, research-only), implemented architecture/config/CI foundations (`T-001` to `T-003`), established the canonical warehouse schema migration (`T-004`), completed symbol identity/mapping enrichment (`T-005`), implemented the PIT constituent pipeline for SP500/SP100 (`T-006`), added provider-agnostic ingestion connector contracts (`T-007`), completed the first non-mock provider adapter (`T-008`, Massive EOD), completed `T-009` with corporate-actions persistence plus ingestion-run auditability, and completed `T-010` with raw daily price persistence plus adjusted-series generation. The project is now ready for `T-011` (data QA suite).
+This session transformed thesis analysis into a concrete research-platform build path, locked scope (US equities, SP500/SP100, long-only, research-only), implemented architecture/config/CI foundations (`T-001` to `T-003`), established the canonical warehouse schema migration (`T-004`), completed symbol identity/mapping enrichment (`T-005`), implemented the PIT constituent pipeline for SP500/SP100 (`T-006`), added provider-agnostic ingestion connector contracts (`T-007`), completed the first non-mock provider adapter (`T-008`, Massive EOD), completed `T-009` with corporate-actions persistence plus ingestion-run auditability, completed `T-010` with raw daily price persistence plus adjusted-series generation, and completed `T-011` with a repository-backed data QA suite. The project is now ready for `T-012` (scheduler + retries + alerts).
 
 ---
 
